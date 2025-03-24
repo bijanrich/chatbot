@@ -3,7 +3,7 @@ class ProcessTelegramMessageJob < ApplicationJob
   require 'net/http'
   require 'json'
   require 'logger'
-  SPECIAL_COMMANDS = ['/thinking', '/model', '/prompt', '/persona', '/logs', '/clear', '/relationship', '/help', '/commands'].freeze
+  SPECIAL_COMMANDS = ['/thinking', '/model', '/prompt', '/persona', '/logs', '/clear', '/relationship', '/help', '/commands', '/memory'].freeze
   
   def self.ollama_logger
     @@ollama_logger ||= Logger.new(Rails.root.join('log', 'ollama_responses.log')).tap do |logger|
@@ -162,6 +162,8 @@ class ProcessTelegramMessageJob < ApplicationJob
       handle_clear_command(telegram_chat_id, chat)
     when '/relationship'
       handle_relationship_command(telegram_chat_id, chat)
+    when '/memory'
+      handle_memory_command(telegram_chat_id, chat)
     when '/help', '/commands'
       handle_help_command(telegram_chat_id, chat)
     else
@@ -413,6 +415,141 @@ class ProcessTelegramMessageJob < ApplicationJob
     end
   end
 
+  def handle_memory_command(telegram_chat_id, chat)
+    # Get all memories for this chat
+    memories = MemoryFact.where(chat_id: chat.id).order(importance_score: :desc)
+    
+    if memories.empty?
+      send_telegram_message(telegram_chat_id, "You don't have any memories stored yet. Continue chatting to create memories!")
+      return
+    end
+    
+    # Get chat settings and persona
+    settings = ChatSetting.for_chat(chat.id)
+    persona = settings.persona&.name || "AI"
+    
+    # Prepare the memory profile
+    memory_profile = "🧠 *Memory Profile* 🧠\n\n"
+    memory_profile += "Memories stored for your conversation with #{persona}:\n\n"
+    
+    # Add important memories section
+    important_memories = memories.where("importance_score >= ?", 7).limit(5)
+    if important_memories.any?
+      memory_profile += "*Key Memories:*\n"
+      important_memories.each do |memory|
+        emoji = emotion_to_emoji(memory.emotion)
+        memory_profile += "#{emoji} #{memory.summary} (#{memory.topic}, importance: #{memory.importance_score}/10)\n"
+      end
+      memory_profile += "\n"
+    end
+    
+    # Add recent memories section
+    recent_memories = memories.order(extracted_at: :desc).limit(5)
+    if recent_memories.any?
+      memory_profile += "*Recent Memories:*\n"
+      recent_memories.each do |memory|
+        emoji = emotion_to_emoji(memory.emotion)
+        memory_profile += "#{emoji} #{memory.summary} (#{memory.topic}, importance: #{memory.importance_score}/10)\n"
+      end
+      memory_profile += "\n"
+    end
+    
+    # Add topic breakdown
+    topics = memories.group(:topic).count.sort_by { |_, count| -count }.take(5)
+    if topics.any?
+      memory_profile += "*Topics You've Discussed:*\n"
+      topics.each do |topic, count|
+        topic_emoji = topic_to_emoji(topic)
+        memory_profile += "#{topic_emoji} #{topic}: #{count} memories\n"
+      end
+      memory_profile += "\n"
+    end
+    
+    # Add emotion breakdown
+    emotions = memories.group(:emotion).count.sort_by { |_, count| -count }.take(5)
+    if emotions.any?
+      memory_profile += "*Emotional Profile:*\n"
+      emotions.each do |emotion, count|
+        emoji = emotion_to_emoji(emotion)
+        memory_profile += "#{emoji} #{emotion.capitalize}: #{count} memories\n"
+      end
+      memory_profile += "\n"
+    end
+    
+    # Add total count and summary
+    memory_profile += "Total memories: #{memories.count}\n"
+    memory_profile += "Average importance: #{memories.average(:importance_score).to_f.round(1)}/10\n"
+    
+    # If the message is too long for Telegram, truncate it
+    if memory_profile.length > 4000
+      memory_profile = memory_profile[0..3995] + "..."
+    end
+    
+    send_telegram_message(telegram_chat_id, memory_profile)
+  end
+
+  def emotion_to_emoji(emotion)
+    case emotion.to_s.downcase
+    when 'happy', 'joy', 'excited', 'pleased'
+      "😊"
+    when 'sad', 'unhappy', 'depressed'
+      "😔"
+    when 'angry', 'upset', 'frustrated'
+      "😠"
+    when 'afraid', 'scared', 'anxious', 'nervous'
+      "😨"
+    when 'surprised', 'shocked', 'amazed'
+      "😮"
+    when 'love', 'affection', 'caring'
+      "❤️"
+    when 'nostalgic', 'reminiscing'
+      "🕰️"
+    when 'proud', 'accomplished'
+      "🏆"
+    when 'curious', 'interested'
+      "🤔"
+    else
+      "📝"
+    end
+  end
+  
+  def topic_to_emoji(topic)
+    case topic.to_s.downcase
+    when 'work', 'career', 'job'
+      "💼"
+    when 'family', 'relatives'
+      "👪"
+    when 'hobby', 'hobbies', 'interest'
+      "🎨"
+    when 'travel', 'vacation', 'trip'
+      "✈️"
+    when 'food', 'cooking', 'recipe'
+      "🍲"
+    when 'music', 'song'
+      "🎵"
+    when 'movie', 'film', 'tv', 'show'
+      "🎬"
+    when 'book', 'reading'
+      "📚"
+    when 'tech', 'technology', 'computer'
+      "💻"
+    when 'health', 'fitness', 'exercise'
+      "💪"
+    when 'education', 'learning', 'school'
+      "🎓"
+    when 'pet', 'animal'
+      "🐾"
+    when 'finance', 'money', 'investment'
+      "💰"
+    when 'relationship', 'dating', 'romance'
+      "❤️"
+    when 'friend', 'friendship'
+      "🤝"
+    else
+      "🔍"
+    end
+  end
+
   def handle_help_command(telegram_chat_id, chat)
     settings = ChatSetting.for_chat(chat.id)
     persona = settings.persona&.name || "AI"
@@ -428,6 +565,7 @@ class ProcessTelegramMessageJob < ApplicationJob
       /persona - View available personas
       /persona [name] - Switch to a different persona
       /relationship - View your relationship with #{persona}
+      /memory - View your complete memory profile
       /clear - Clear chat history and start fresh
       /logs prompt - View last prompt sent
       /logs response - View last AI response
