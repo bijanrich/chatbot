@@ -170,6 +170,13 @@ class ProcessTelegramMessageJob < ApplicationJob
           model: settings.model # Preserve the current model setting
         )
         
+        # Create a system message in the new chat to represent the persona change
+        Message.create!(
+          chat: new_chat,
+          role: 'system',
+          content: "Persona was changed to #{persona.name}. Starting a new conversation."
+        )
+        
         welcome_message = "Switched to persona: #{persona.name}\n\n" \
                          "Starting fresh chat with #{persona.name}! 🔄\n" \
                          "#{persona.description}"
@@ -291,6 +298,13 @@ class ProcessTelegramMessageJob < ApplicationJob
       model: old_settings.model,
       persona: old_settings.persona,
       show_thinking: old_settings.show_thinking
+    )
+    
+    # Create a system message in the new chat to represent the clear action
+    Message.create!(
+      chat: new_chat,
+      role: 'system',
+      content: 'Chat history was cleared. Starting a new conversation.'
     )
     
     send_telegram_message(telegram_chat_id, "Chat history cleared! Starting a new conversation. 🔄")

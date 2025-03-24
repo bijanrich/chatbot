@@ -20,6 +20,7 @@ class PromptBuilderService
     # Get the last few messages from the chat for context, excluding the current message
     previous_messages = @chat.messages
                              .where('created_at < ?', @message.created_at)
+                             .where(chat_id: @chat.id) # Ensure we only get messages from this specific chat
                              .order(created_at: :desc)
                              .limit(20)
                              .reverse
@@ -44,7 +45,7 @@ class PromptBuilderService
     # Add previous messages to the conversation
     previous_messages.each do |msg|
       messages << {
-        "role": msg.role == 'user' ? 'user' : 'assistant',
+        "role": msg.role,
         "content": msg.content
       }
     end
