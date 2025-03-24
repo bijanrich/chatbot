@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_03_24_211844) do
+ActiveRecord::Schema[7.1].define(version: 2025_03_24_211845) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "vector"
@@ -77,17 +77,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_24_211844) do
     t.index ["chat_id"], name: "index_relationship_states_on_chat_id"
   end
 
-  create_table "short_term_memories", force: :cascade do |t|
-    t.bigint "user_id", null: false
-    t.text "message", null: false
-    t.string "role", null: false
-    t.datetime "timestamp", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["user_id", "timestamp"], name: "index_short_term_memories_on_user_id_and_timestamp", order: { timestamp: :desc }
-    t.index ["user_id"], name: "index_short_term_memories_on_user_id"
-  end
-
   create_table "telegram_messages", force: :cascade do |t|
     t.bigint "chat_id", null: false
     t.text "text", null: false
@@ -100,17 +89,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_24_211844) do
     t.index ["responded"], name: "index_telegram_messages_on_responded"
   end
 
-# Could not dump table "user_memories" because of following StandardError
-#   Unknown type 'vector(1536)' for column 'embedding'
-
-  create_table "users", force: :cascade do |t|
-    t.string "name", null: false
-    t.string "email", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["email"], name: "index_users_on_email", unique: true
-  end
-
   add_foreign_key "chat_settings", "chats"
   add_foreign_key "conversation_summaries", "chats"
   add_foreign_key "memory_facts", "chats"
@@ -118,6 +96,4 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_24_211844) do
   add_foreign_key "messages", "chats"
   add_foreign_key "psychological_analyses", "chats"
   add_foreign_key "relationship_states", "chats"
-  add_foreign_key "short_term_memories", "users"
-  add_foreign_key "user_memories", "users"
 end
