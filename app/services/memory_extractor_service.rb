@@ -164,9 +164,24 @@ class MemoryExtractorService
   end
 
   def parse_memory_response(response, chat_id)
-    return [] if response.nil? || !response.is_a?(Hash) || response[:message].nil?
+    return [] if response.nil?
 
-    content = response[:message][:content]
+    # Extract content based on the response structure
+    content = nil
+    
+    if response.is_a?(Hash)
+      if response["message"] && response["message"]["content"]
+        # New API format
+        content = response["message"]["content"]
+      elsif response[:message] && response[:message][:content]
+        # Symbolized keys format
+        content = response[:message][:content]
+      elsif response["response"]
+        # Old API format with direct response
+        content = response["response"]
+      end
+    end
+    
     return [] if content.blank?
 
     # Try to extract JSON array from the response

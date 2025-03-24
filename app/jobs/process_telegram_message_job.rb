@@ -88,10 +88,32 @@ class ProcessTelegramMessageJob < ApplicationJob
     )
 
     # Check if response is valid
-    if response.nil? || !response.is_a?(Hash) || response[:message].nil?
-      Rails.logger.error("Failed to get a valid response from Ollama: #{response.inspect}")
-      error_message = "Sorry, I wasn't able to generate a response. Please try again."
-      send_telegram_message(telegram_chat_id, error_message)
+    if response.nil?
+      Rails.logger.error("Failed to get a response from Ollama: nil response")
+      send_telegram_message(telegram_chat_id, "Sorry, I wasn't able to generate a response. Please try again.")
+      return
+    end
+
+    # Extract message content based on the response structure
+    content = nil
+    
+    if response.is_a?(Hash)
+      if response["message"] && response["message"]["content"]
+        # New API format
+        content = response["message"]["content"]
+      elsif response[:message] && response[:message][:content]
+        # Symbolized keys format
+        content = response[:message][:content]
+      elsif response["response"]
+        # Old API format with direct response
+        content = response["response"]
+      end
+    end
+    
+    # If we couldn't extract content, log and return error
+    if content.nil? || content.strip.empty?
+      Rails.logger.error("Failed to extract content from Ollama response: #{response.inspect}")
+      send_telegram_message(telegram_chat_id, "Sorry, I wasn't able to generate a response. Please try again.")
       return
     end
 
@@ -99,12 +121,12 @@ class ProcessTelegramMessageJob < ApplicationJob
     ai_message = Message.create!(
       chat: chat,
       role: 'assistant',
-      content: response[:message][:content],
+      content: content,
       telegram_chat_id: telegram_chat_id
     )
 
     # Send the AI's response back to Telegram
-    send_telegram_message(telegram_chat_id, response[:message][:content])
+    send_telegram_message(telegram_chat_id, content)
     
     # Schedule memory extraction
     ExtractMemoryJob.perform_later(chat.id)
