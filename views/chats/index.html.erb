@@ -1,0 +1,19 @@
+<div class="max-w-4xl mx-auto p-4">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold">Chats</h1>
+    <%= link_to "New Chat", new_chat_path, class: "bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" %>
+  </div>
+
+  <div class="space-y-4">
+    <% @chats.each do |chat| %>
+      <%= link_to chat_path(chat), class: "block p-4 border rounded-lg hover:border-blue-500 transition-colors" do %>
+        <div class="font-bold text-lg mb-2"><%= chat.title %></div>
+        <% if chat.last_message %>
+          <div class="text-gray-600 text-sm truncate">
+            <%= chat.last_message.content %>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+</div> 
