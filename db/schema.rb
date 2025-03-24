@@ -33,6 +33,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_24_211845) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "telegram_id"
+    t.index ["telegram_id"], name: "index_chats_on_telegram_id", unique: true
   end
 
 # Could not dump table "conversation_summaries" because of following StandardError
