@@ -416,8 +416,8 @@ class ProcessTelegramMessageJob < ApplicationJob
   end
 
   def handle_memory_command(telegram_chat_id, chat)
-    # Get all memories for this chat
-    memories = MemoryFact.where(chat_id: chat.id).order(importance_score: :desc)
+    # Get all memories for this chat - don't order by importance_score initially
+    memories = MemoryFact.where(chat_id: chat.id)
     
     if memories.empty?
       send_telegram_message(telegram_chat_id, "You don't have any memories stored yet. Continue chatting to create memories!")
@@ -433,7 +433,7 @@ class ProcessTelegramMessageJob < ApplicationJob
     memory_profile += "Memories stored for your conversation with #{persona}:\n\n"
     
     # Add important memories section
-    important_memories = memories.where("importance_score >= ?", 7).limit(5)
+    important_memories = memories.where("importance_score >= ?", 7).order(importance_score: :desc).limit(5)
     if important_memories.any?
       memory_profile += "*Key Memories:*\n"
       important_memories.each do |memory|
@@ -454,7 +454,7 @@ class ProcessTelegramMessageJob < ApplicationJob
       memory_profile += "\n"
     end
     
-    # Add topic breakdown
+    # Add topic breakdown - avoid SQL ORDER BY by sorting in Ruby
     topics = memories.group(:topic).count.sort_by { |_, count| -count }.take(5)
     if topics.any?
       memory_profile += "*Topics You've Discussed:*\n"
@@ -465,7 +465,7 @@ class ProcessTelegramMessageJob < ApplicationJob
       memory_profile += "\n"
     end
     
-    # Add emotion breakdown
+    # Add emotion breakdown - avoid SQL ORDER BY by sorting in Ruby
     emotions = memories.group(:emotion).count.sort_by { |_, count| -count }.take(5)
     if emotions.any?
       memory_profile += "*Emotional Profile:*\n"
@@ -476,9 +476,12 @@ class ProcessTelegramMessageJob < ApplicationJob
       memory_profile += "\n"
     end
     
+    # For average, use a specific query to avoid SQL errors
+    avg_importance = memories.average(:importance_score).to_f.round(1)
+    
     # Add total count and summary
     memory_profile += "Total memories: #{memories.count}\n"
-    memory_profile += "Average importance: #{memories.average(:importance_score).to_f.round(1)}/10\n"
+    memory_profile += "Average importance: #{avg_importance}/10\n"
     
     # If the message is too long for Telegram, truncate it
     if memory_profile.length > 4000
