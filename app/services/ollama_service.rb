@@ -9,6 +9,10 @@ class OllamaService
   GENERATE_URL = "#{BASE_URL}/generate"
   
   class << self
+    def generate_response(messages, model = 'llama3')
+      chat(messages: messages, model: model)
+    end
+    
     def chat(messages:, model: 'llama3')
       uri = URI(CHAT_URL)
       http = Net::HTTP.new(uri.host, uri.port)
