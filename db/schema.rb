@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_03_24_212003) do
+ActiveRecord::Schema[7.1].define(version: 2025_03_24_224727) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "vector"
@@ -26,6 +26,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_24_212003) do
     t.text "persona"
     t.text "relationship_state"
     t.bigint "persona_id"
+    t.jsonb "relationship_data"
     t.index ["chat_id"], name: "index_chat_settings_on_chat_id"
     t.index ["persona_id"], name: "index_chat_settings_on_persona_id"
   end

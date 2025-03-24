@@ -4,13 +4,6 @@ class PromptBuilderService
     @chat = message&.chat
   end
 
-  def self.default_prompt
-    "You are a helpful and friendly AI assistant who keeps responses concise and engaging. " \
-    "You aim to be helpful while maintaining a friendly tone. " \
-    "Use emojis occasionally but not excessively. " \
-    "Keep responses brief and to the point."
-  end
-
   def build
     raise "Message is required for building prompts" if @message.nil?
 
@@ -48,67 +41,47 @@ class PromptBuilderService
 
     # Add previous messages to the conversation
     previous_messages.each do |msg|
+      role = msg.role
+      # Skip system messages as they're already included
+      next if role == 'system'
+      
       messages << {
-        "role": msg.role,
+        "role": role,
         "content": msg.content
       }
     end
 
-    # Add the current user message
+    # Add the current message
     messages << {
-      "role": "user",
+      "role": @message.role,
       "content": @message.content
     }
-    
+
+    # Return the structured messages for the API
     messages
   end
 
   private
-  
-  def memory_context
-    return nil if @chat.nil?
-
-    # Try to find memories using embeddings for better semantic matching
-    memories = if pgvector_available?
-      # Generate an embedding for the current message
-      embedding = OllamaService.generate_embedding(@message.content)
-      
-      if embedding.present?
-        MemoryFact.find_by_embedding(@chat.id, embedding, limit: 5)
-      else
-        # Fall back to recent memories if embedding fails
-        MemoryFact.find_recent(@chat.id, limit: 5)
-      end
-    else
-      # If pgvector is not available, use recent memories
-      MemoryFact.find_recent(@chat.id, limit: 5)
-    end
-    
-    return nil if memories.empty?
-    
-    # Format memories for inclusion in the prompt
-    context = "Here are some relevant facts and memories from our previous conversations:\n\n"
-    
-    memories.each do |memory|
-      importance = case memory.importance_score
-                   when 1..3 then "low"
-                   when 4..7 then "medium" 
-                   else "high"
-                   end
-                   
-      context += "- #{memory.summary} (#{memory.topic}, #{memory.emotion}, importance: #{importance})\n"
-    end
-    
-    context
-  end
-  
-  def pgvector_available?
-    ActiveRecord::Base.connection.extension_enabled?('vector')
-  rescue
-    false
-  end
 
   def system_prompt(settings)
-    settings&.effective_prompt || self.class.default_prompt
+    # Always use a persona - either the one from settings or the default one
+    persona = settings.persona || Persona.default
+    Rails.logger.debug("Using persona: #{persona.name} for prompt")
+    
+    # Use custom prompt if set, otherwise use persona's full prompt with relationship context
+    settings.prompt.presence || persona.full_prompt(@chat)
+  end
+
+  def memory_context
+    return "" if @chat.nil?
+
+    memory_service = MemoryExtractorService.new
+    memories = memory_service.fetch_memories_for_chat(@chat.id)
+    
+    if memories.present?
+      "Here are some important memories from previous conversations:\n\n#{memories.join("\n\n")}"
+    else
+      ""
+    end
   end
 end 
