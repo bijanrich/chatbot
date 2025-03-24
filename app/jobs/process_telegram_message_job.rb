@@ -143,7 +143,7 @@ class ProcessTelegramMessageJob < ApplicationJob
   def send_telegram_message(chat_id, text)
     return if text.blank?
 
-    uri = URI("https://api.telegram.org/bot#{ENV['TELEGRAM_API_TOKEN']}/sendMessage")
+    uri = URI("https://api.telegram.org/bot#{ENV['TELEGRAM_BOT_TOKEN']}/sendMessage")
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
 

@@ -1,5 +1,3 @@
-require 'telegram/bot'
-
 class TelegramWebhookController < ActionController::API
   # No need for skip_before_action :verify_authenticity_token with ActionController::API
   

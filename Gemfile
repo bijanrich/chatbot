@@ -59,3 +59,5 @@ end
 gem "sidekiq-scheduler", "~> 5.0"
 
 gem "pgvector", "~> 0.3.2"
+
+gem 'httparty'

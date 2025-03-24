@@ -6,9 +6,6 @@ class MemoryFact < ApplicationRecord
   validates :emotion, presence: true
   validates :importance_score, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 10 }
 
-  # Add embedding column if using Postgres with pgvector
-  has_pg_vector :embedding, dimensions: 384, if: -> { connection.extension_enabled?('vector') }
-
   # Find recent memories
   def self.find_recent(chat_id, limit: 5)
     where(chat_id: chat_id)
