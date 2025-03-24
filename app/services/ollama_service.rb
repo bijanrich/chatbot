@@ -9,12 +9,17 @@ class OllamaService
   GENERATE_URL = "#{BASE_URL}/generate"
   DEFAULT_MODEL = 'mistral-small'
   
+  # Instance method for chat that delegates to the class method
+  def chat(messages:, model: DEFAULT_MODEL, stream: false)
+    self.class.chat(messages: messages, model: model, stream: stream)
+  end
+  
   class << self
     def generate_response(messages, model = DEFAULT_MODEL)
       chat(messages: messages, model: model)
     end
     
-    def chat(messages:, model: DEFAULT_MODEL)
+    def chat(messages:, model: DEFAULT_MODEL, stream: false)
       uri = URI(CHAT_URL)
       http = Net::HTTP.new(uri.host, uri.port)
       http.read_timeout = 120  # Increase timeout to 2 minutes
@@ -25,7 +30,7 @@ class OllamaService
       payload = {
         model: model,
         messages: messages,
-        stream: false  # Disable streaming to get a single response
+        stream: stream  # Use the stream parameter
       }
       
       request.body = payload.to_json
@@ -68,6 +73,9 @@ class OllamaService
             raise "Invalid JSON response from Ollama: #{e.message}"
           end
         end
+
+        # If we want to return the parsed response directly (for structured data)
+        return parsed_response unless stream
 
         # Extract the response text from either format
         response_text = if parsed_response['response']
