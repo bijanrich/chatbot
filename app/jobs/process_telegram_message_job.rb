@@ -3,7 +3,7 @@ class ProcessTelegramMessageJob < ApplicationJob
   require 'net/http'
   require 'json'
   require 'logger'
-  SPECIAL_COMMANDS = ['/thinking', '/model', '/prompt', '/persona', '/logs'].freeze
+  SPECIAL_COMMANDS = ['/thinking', '/model', '/prompt', '/persona', '/logs', '/clear'].freeze
   
   def self.ollama_logger
     @@ollama_logger ||= Logger.new(Rails.root.join('log', 'ollama_responses.log')).tap do |logger|
@@ -111,6 +111,8 @@ class ProcessTelegramMessageJob < ApplicationJob
       handle_persona_command(rest, telegram_chat_id, chat)
     when '/logs'
       handle_logs_command(rest, telegram_chat_id, chat)
+    when '/clear'
+      handle_clear_command(telegram_chat_id, chat)
     end
   end
 
@@ -273,5 +275,27 @@ class ProcessTelegramMessageJob < ApplicationJob
       Rails.logger.error("Failed to send Telegram message: #{response.code} - #{response.message}")
       Rails.logger.error("Response body: #{response.body}")
     end
+  end
+
+  def handle_clear_command(telegram_chat_id, chat)
+    # First, mark the old chat as inactive
+    chat.update!(active: false)
+    
+    # Create a new chat with the same telegram_id
+    new_chat = Chat.create!(telegram_id: telegram_chat_id)
+    
+    # Copy settings from the old chat to preserve model, persona, etc.
+    old_settings = ChatSetting.for_chat(chat.id)
+    ChatSetting.create!(
+      chat: new_chat,
+      model: old_settings.model,
+      persona: old_settings.persona,
+      show_thinking: old_settings.show_thinking
+    )
+    
+    send_telegram_message(telegram_chat_id, "Chat history cleared! Starting a new conversation. 🔄")
+  rescue => e
+    Rails.logger.error("Failed to clear chat: #{e.message}")
+    send_telegram_message(telegram_chat_id, "Sorry, there was an error clearing the chat. Please try again.")
   end
 end 
