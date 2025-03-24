@@ -29,8 +29,16 @@ class OllamaService
       
       request.body = payload.to_json
 
-      # Log what we're about to send
-      Rails.logger.info("Sending request to Ollama: #{request.body}")
+      # Log what we're about to send to the specialized prompt logger
+      prompt_logger = ProcessTelegramMessageJob.prompt_logger
+      prompt_logger.info("===== OLLAMA PROMPT =====")
+      prompt_logger.info("Model: #{model}")
+      prompt_logger.info("Full Request Payload:")
+      prompt_logger.info(JSON.pretty_generate(payload))
+      prompt_logger.info("========================")
+
+      # Also log to Rails logger for console visibility
+      Rails.logger.info("Sending request to Ollama with model: #{model}")
 
       begin
         response = http.request(request)
@@ -39,7 +47,9 @@ class OllamaService
         Rails.logger.info("Ollama response code: #{response.code}")
         
         unless response.is_a?(Net::HTTPSuccess)
-          raise "Ollama API returned non-200 status: #{response.code} - #{response.body}"
+          error_msg = "Ollama API returned non-200 status: #{response.code} - #{response.body}"
+          Rails.logger.error(error_msg)
+          raise error_msg
         end
 
         begin
@@ -74,6 +84,16 @@ class OllamaService
           raise error_msg
         end
         
+        # Log the full response to the specialized response logger
+        response_logger = ProcessTelegramMessageJob.ollama_logger
+        response_logger.info("===== OLLAMA RESPONSE =====")
+        response_logger.info("Model: #{model}")
+        response_logger.info("Raw Response:")
+        response_logger.info(JSON.pretty_generate(parsed_response))
+        response_logger.info("Extracted Text:")
+        response_logger.info(response_text)
+        response_logger.info("===========================")
+        
         response_text.strip
       rescue => e
         Rails.logger.error("Error in OllamaService.chat: #{e.class} - #{e.message}")
@@ -89,6 +109,14 @@ class OllamaService
       # Create an embedding prompt specifically for Llama models
       embedding_prompt = "Represent this text for retrieval: #{text}\nReturn only the embedding vector as a JSON array."
 
+      # Log the embedding prompt
+      prompt_logger = ProcessTelegramMessageJob.prompt_logger
+      prompt_logger.info("===== EMBEDDING PROMPT =====")
+      prompt_logger.info("Model: #{model}")
+      prompt_logger.info("Text: #{text}")
+      prompt_logger.info("Full Prompt: #{embedding_prompt}")
+      prompt_logger.info("===========================")
+
       begin
         response = HTTParty.post(
           GENERATE_URL,
@@ -103,6 +131,13 @@ class OllamaService
         if response.success?
           # First try to extract a proper JSON array
           response_body = response.parsed_response['response'].to_s
+          
+          # Log the embedding response
+          response_logger = ProcessTelegramMessageJob.ollama_logger
+          response_logger.info("===== EMBEDDING RESPONSE =====")
+          response_logger.info("Model: #{model}")
+          response_logger.info("Raw Response: #{response_body[0..200]}...") # Log first 200 chars to avoid giant logs
+          response_logger.info("==============================")
           
           # Try to extract JSON array from the response body
           json_array = extract_json_array(response_body)

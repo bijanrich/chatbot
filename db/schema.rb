@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_03_24_211845) do
+ActiveRecord::Schema[7.1].define(version: 2025_03_24_212003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "vector"
@@ -25,7 +25,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_24_211845) do
     t.text "prompt"
     t.text "persona"
     t.text "relationship_state"
+    t.bigint "persona_id"
     t.index ["chat_id"], name: "index_chat_settings_on_chat_id"
+    t.index ["persona_id"], name: "index_chat_settings_on_persona_id"
   end
 
   create_table "chats", force: :cascade do |t|
@@ -33,7 +35,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_24_211845) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "telegram_id"
-    t.index ["telegram_id"], name: "index_chats_on_telegram_id", unique: true
+    t.boolean "active", default: true
+    t.index ["telegram_id", "active"], name: "index_chats_on_telegram_id_and_active"
+    t.index ["telegram_id"], name: "index_chats_on_telegram_id_where_active", unique: true, where: "(active = true)"
   end
 
 # Could not dump table "conversation_summaries" because of following StandardError
@@ -54,6 +58,21 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_24_211845) do
     t.index ["chat_id"], name: "index_messages_on_chat_id"
     t.index ["responded"], name: "index_messages_on_responded"
     t.index ["telegram_chat_id"], name: "index_messages_on_telegram_chat_id"
+  end
+
+  create_table "personas", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.text "default_prompt", null: false
+    t.jsonb "personality_traits", default: [], null: false
+    t.string "tone", default: "neutral"
+    t.string "emoji_usage", default: "light"
+    t.jsonb "emotional_profile", default: {}, null: false
+    t.jsonb "speech_style", default: {}, null: false
+    t.jsonb "memory_behavior", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_personas_on_name", unique: true
   end
 
   create_table "psychological_analyses", force: :cascade do |t|
@@ -91,6 +110,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_24_211845) do
   end
 
   add_foreign_key "chat_settings", "chats"
+  add_foreign_key "chat_settings", "personas"
   add_foreign_key "conversation_summaries", "chats"
   add_foreign_key "memory_facts", "chats"
   add_foreign_key "memory_facts", "messages"

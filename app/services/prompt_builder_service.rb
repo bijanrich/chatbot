@@ -1,10 +1,19 @@
 class PromptBuilderService
-  def initialize(message)
+  def initialize(message = nil)
     @message = message
-    @chat = message.chat
+    @chat = message&.chat
+  end
+
+  def self.default_prompt
+    "You are a helpful and friendly AI assistant who keeps responses concise and engaging. " \
+    "You aim to be helpful while maintaining a friendly tone. " \
+    "Use emojis occasionally but not excessively. " \
+    "Keep responses brief and to the point."
   end
 
   def build
+    raise "Message is required for building prompts" if @message.nil?
+
     # Get chat settings for model
     settings = ChatSetting.for_chat(@chat.id)
     
@@ -52,6 +61,8 @@ class PromptBuilderService
   private
   
   def memory_context
+    return nil if @chat.nil?
+
     # Try to find memories using embeddings for better semantic matching
     memories = if pgvector_available?
       # Generate an embedding for the current message
@@ -93,13 +104,6 @@ class PromptBuilderService
   end
 
   def system_prompt(settings)
-    settings.prompt.presence || default_system_prompt
-  end
-
-  def default_system_prompt
-    "You are a helpful and friendly AI assistant who keeps responses concise and engaging. " \
-    "You aim to be helpful while maintaining a friendly tone. " \
-    "Use emojis occasionally but not excessively. " \
-    "Keep responses brief and to the point."
+    settings&.effective_prompt || self.class.default_prompt
   end
 end 
