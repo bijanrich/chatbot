@@ -3,7 +3,7 @@ class ProcessTelegramMessageJob < ApplicationJob
   require 'net/http'
   require 'json'
   require 'logger'
-  SPECIAL_COMMANDS = ['/thinking', '/model', '/prompt', '/persona', '/logs', '/clear', '/relationship'].freeze
+  SPECIAL_COMMANDS = ['/thinking', '/model', '/prompt', '/persona', '/logs', '/clear', '/relationship', '/help', '/commands'].freeze
   
   def self.ollama_logger
     @@ollama_logger ||= Logger.new(Rails.root.join('log', 'ollama_responses.log')).tap do |logger|
@@ -140,8 +140,10 @@ class ProcessTelegramMessageJob < ApplicationJob
       handle_clear_command(telegram_chat_id, chat)
     when '/relationship'
       handle_relationship_command(telegram_chat_id, chat)
+    when '/help', '/commands'
+      handle_help_command(telegram_chat_id, chat)
     else
-      send_telegram_message(telegram_chat_id, "Unknown command: #{command}. Available commands: /model, /prompt, /persona, /clear, /relationship")
+      send_telegram_message(telegram_chat_id, "Unknown command: #{command}. Use /help to see available commands.")
     end
   end
 
@@ -387,5 +389,31 @@ class ProcessTelegramMessageJob < ApplicationJob
     else
       "Your relationship is evolving in unique ways."
     end
+  end
+
+  def handle_help_command(telegram_chat_id, chat)
+    settings = ChatSetting.for_chat(chat.id)
+    persona = settings.persona&.name || "AI"
+    
+    help_text = <<~HELP
+      🤖 *Available Commands* 🤖
+      
+      /help or /commands - Show this help message
+      /model - View current model (e.g., mistral-small)
+      /model [name] - Change the model
+      /prompt - View current system prompt
+      /prompt [text] - Set a custom system prompt
+      /persona - View available personas
+      /persona [name] - Switch to a different persona
+      /relationship - View your relationship with #{persona}
+      /clear - Clear chat history and start fresh
+      /logs prompt - View last prompt sent
+      /logs response - View last AI response
+      /logs error - View recent errors
+      
+      You're currently using the #{persona} persona with the #{settings.model || OllamaService::DEFAULT_MODEL} model.
+    HELP
+    
+    send_telegram_message(telegram_chat_id, help_text)
   end
 end 
