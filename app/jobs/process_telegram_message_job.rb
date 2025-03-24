@@ -86,7 +86,7 @@ class ProcessTelegramMessageJob < ApplicationJob
       )
 
       # Create response message in database
-      Message.create!(
+      assistant_message = Message.create!(
         content: response_text,
         role: 'gfbot',
         telegram_chat_id: message.telegram_chat_id,
@@ -97,6 +97,10 @@ class ProcessTelegramMessageJob < ApplicationJob
 
       # Mark original message as responded
       message.mark_as_responded!
+      
+      # Queue memory extraction only for user messages
+      ExtractMemoryJob.perform_later(message.id) if message.role == 'user'
+      
     rescue => e
       Rails.logger.error "Error processing Telegram message #{message_id}: #{e.message}\n#{e.backtrace.join("\n")}"
       

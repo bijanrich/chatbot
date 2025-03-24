@@ -22,6 +22,15 @@ class PromptBuilderService
         "content": system_prompt(settings)
       }
     ]
+    
+    # Add relevant memories if available
+    memory_content = memory_context
+    if memory_content.present?
+      messages << {
+        "role": "system",
+        "content": memory_content
+      }
+    end
 
     # Add previous messages to the conversation
     previous_messages.each do |msg|
@@ -41,6 +50,28 @@ class PromptBuilderService
   end
 
   private
+  
+  def memory_context
+    # Find recent and relevant memories
+    memories = MemoryFact.find_recent(@chat.id, limit: 5)
+    
+    return nil if memories.empty?
+    
+    # Format memories for inclusion in the prompt
+    context = "Here are some relevant facts and memories from our previous conversations:\n\n"
+    
+    memories.each do |memory|
+      importance = case memory.importance_score
+                   when 1..3 then "low"
+                   when 4..7 then "medium" 
+                   else "high"
+                   end
+                   
+      context += "- #{memory.summary} (#{memory.topic}, #{memory.emotion}, importance: #{importance})\n"
+    end
+    
+    context
+  end
 
   def system_prompt(settings)
     settings.prompt.presence || default_system_prompt
