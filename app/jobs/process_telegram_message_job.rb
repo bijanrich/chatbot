@@ -46,7 +46,7 @@ class ProcessTelegramMessageJob < ApplicationJob
 
     # Get the custom model for this chat or use default
     settings = ChatSetting.for_chat(chat.id)
-    model = settings.model.presence || 'llama3'
+    model = settings.model.presence || OllamaService::DEFAULT_MODEL
 
     begin
       # Build prompt with context using PromptBuilderService
@@ -118,7 +118,7 @@ class ProcessTelegramMessageJob < ApplicationJob
     if model_name.blank?
       # Display current model
       settings = ChatSetting.for_chat(chat.id)
-      current_model = settings.model.presence || 'llama3'
+      current_model = settings.model.presence || OllamaService::DEFAULT_MODEL
       send_telegram_message(telegram_chat_id, "Current model: #{current_model}")
     else
       # Update model setting

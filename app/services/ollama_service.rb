@@ -7,13 +7,14 @@ class OllamaService
   BASE_URL = ENV.fetch('OLLAMA_API_URL', 'http://localhost:11434/api')
   CHAT_URL = "#{BASE_URL}/chat"
   GENERATE_URL = "#{BASE_URL}/generate"
+  DEFAULT_MODEL = 'mistral-small'
   
   class << self
-    def generate_response(messages, model = 'llama3')
+    def generate_response(messages, model = DEFAULT_MODEL)
       chat(messages: messages, model: model)
     end
     
-    def chat(messages:, model: 'llama3')
+    def chat(messages:, model: DEFAULT_MODEL)
       uri = URI(CHAT_URL)
       http = Net::HTTP.new(uri.host, uri.port)
       http.read_timeout = 120  # Increase timeout to 2 minutes
@@ -103,7 +104,7 @@ class OllamaService
     end
     
     # Generate embeddings for text using Ollama
-    def generate_embedding(text, model = 'llama3')
+    def generate_embedding(text, model = DEFAULT_MODEL)
       return nil if text.blank?
 
       # Create an embedding prompt specifically for Llama models

@@ -11,10 +11,10 @@ class MemoryExtractorService
     prompt = create_memory_extraction_prompt(message.content)
     
     begin
-      # Make the request to the Ollama API
+      # Call Ollama to extract memory facts
       response = OllamaService.chat(
         messages: [{ role: 'user', content: prompt }],
-        model: 'llama3'
+        model: OllamaService::DEFAULT_MODEL
       )
       
       Rails.logger.info("Memory extraction result: #{response}")
