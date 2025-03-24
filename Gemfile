@@ -43,7 +43,6 @@ gem 'telegram-bot-ruby'
 gem 'dotenv-rails'
 
 # Use pgvector for vector similarity search
-gem 'pgvector'
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
@@ -58,3 +57,5 @@ group :development do
 end
 
 gem "sidekiq-scheduler", "~> 5.0"
+
+gem "pgvector", "~> 0.3.2"

@@ -21,7 +21,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_24_183624) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "model", default: "llama3"
-    t.string "ollama_ip", default: "localhost"
+    t.string "ollama_ip"
     t.text "prompt"
     t.text "persona"
     t.text "relationship_state"
@@ -34,10 +34,11 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_24_183624) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "memory_facts", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
+# Could not dump table "conversation_summaries" because of following StandardError
+#   Unknown type 'vector(384)' for column 'embedding'
+
+# Could not dump table "memory_facts" because of following StandardError
+#   Unknown type 'vector(384)' for column 'embedding'
 
   create_table "messages", force: :cascade do |t|
     t.text "content"
@@ -76,13 +77,14 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_24_183624) do
   end
 
   create_table "short_term_memories", force: :cascade do |t|
+    t.bigint "user_id", null: false
     t.text "message", null: false
     t.string "role", null: false
     t.datetime "timestamp", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "session_id"
-    t.index ["session_id"], name: "index_short_term_memories_on_session_id"
+    t.index ["user_id", "timestamp"], name: "index_short_term_memories_on_user_id_and_timestamp", order: { timestamp: :desc }
+    t.index ["user_id"], name: "index_short_term_memories_on_user_id"
   end
 
   create_table "telegram_messages", force: :cascade do |t|
@@ -109,7 +111,11 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_24_183624) do
   end
 
   add_foreign_key "chat_settings", "chats"
+  add_foreign_key "conversation_summaries", "chats"
+  add_foreign_key "memory_facts", "chats"
   add_foreign_key "messages", "chats"
   add_foreign_key "psychological_analyses", "chats"
   add_foreign_key "relationship_states", "chats"
+  add_foreign_key "short_term_memories", "users"
+  add_foreign_key "user_memories", "users"
 end
