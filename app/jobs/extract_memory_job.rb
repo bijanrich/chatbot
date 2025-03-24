@@ -2,20 +2,20 @@ class ExtractMemoryJob < ApplicationJob
   queue_as :default
 
   def perform(message_id)
-    message = Message.find(message_id)
+    message = Message.find_by(id: message_id)
+    return unless message
+    return unless message.role == 'user'  # Only extract memories from user messages
     
-    # Only extract memories from user messages, skip system/bot messages and commands
-    return if message.role != 'user' || message.content.start_with?('/')
+    chat = message.chat
+    return unless chat
     
+    # Extract memories from the message
     begin
-      # Extract memories using the MemoryExtractorService
-      memories = MemoryExtractorService.new(message).extract_memory_facts
-      
-      Rails.logger.info("Extracted #{memories.size} memories from message #{message_id}")
+      service = MemoryExtractorService.new(chat)
+      service.extract_memory_facts(message)
     rescue => e
-      Rails.logger.error("Error extracting memories from message #{message_id}: #{e.message}\n#{e.backtrace.join("\n")}")
-      # Don't re-raise the error since this is a background job
-      # and we don't want to block the main flow if memory extraction fails
+      Rails.logger.error("Failed to extract memories: #{e.message}")
+      Rails.logger.error(e.backtrace.join("\n"))
     end
   end
 end 

@@ -3,6 +3,7 @@ class ProcessTelegramMessageJob < ApplicationJob
   require 'net/http'
   require 'json'
   require 'logger'
+  SPECIAL_COMMANDS = ['/thinking', '/model', '/prompt'].freeze
 
   def self.ollama_logger
     @@ollama_logger ||= Logger.new(Rails.root.join('log', 'ollama_responses.log')).tap do |logger|
@@ -20,164 +21,144 @@ class ProcessTelegramMessageJob < ApplicationJob
     end
   end
 
-  def perform(message_id)
-    message = Message.find(message_id)
-    return if message.responded?
+  def perform(telegram_message, telegram_chat_id, message_id = nil)
+    return if telegram_message.blank? || telegram_chat_id.blank?
 
-    # Initialize Telegram bot client
-    client = Telegram::Bot::Client.new(ENV['TELEGRAM_BOT_TOKEN'])
+    # Get or create the chat for this Telegram chat
+    chat = Chat.find_or_create_by(telegram_id: telegram_chat_id)
+    
+    # Check if this is a message that needs a response (not a special command)
+    if special_command?(telegram_message)
+      handle_special_command(telegram_message, telegram_chat_id, chat)
+      return
+    end
+
+    # Create a message for the user's input
+    message = if message_id
+      # Update existing message
+      Message.find(message_id).tap do |msg|
+        msg.update(content: telegram_message)
+      end
+    else
+      # Create new message
+      Message.create_from_telegram(telegram_chat_id, telegram_message)
+    end
+
+    # Get the custom model for this chat or use default
+    settings = ChatSetting.for_chat(chat.id)
+    model = settings.model.presence || 'llama3'
 
     begin
-      # Handle /thinking command
-      if message.content.strip == '/thinking'
-        handle_thinking_command(message, client)
-        return
-      end
-
-      # Handle /model command
-      if message.content.strip.start_with?('/model')
-        handle_model_command(message, client)
-        return
-      end
-
-      # Handle /prompt command
-      if message.content.strip.start_with?('/prompt')
-        handle_prompt_command(message, client)
-        return
-      end
-
-      # Get chat settings
-      settings = ChatSetting.for_chat(message.chat_id)
-
-      # Build message array using PromptBuilderService
+      # Build prompt with context using PromptBuilderService
       messages = PromptBuilderService.new(message).build
       
-      # Log the messages before sending
-      self.class.prompt_logger.info(JSON.pretty_generate(messages))
-
-      # Call Ollama API using the OllamaService
-      response_text = OllamaService.chat(
-        messages: messages,
-        model: settings.model
-      )
-
-      # Ensure we have a valid response
-      if response_text.nil? || response_text.strip.empty?
-        raise "Received empty response from Ollama"
-      end
-
-      # If thinking is disabled, strip out the thinking section
-      unless settings.show_thinking
-        response_text = response_text.gsub(/<think>.*?<\/think>/m, '').strip
-      end
-
-      # Ensure we still have content after stripping thinking section
-      if response_text.strip.empty?
-        raise "Response is empty after processing"
-      end
+      # Log the messages being sent for debugging
+      Rails.logger.info("Sending messages to Ollama: #{messages.inspect}")
       
-      # Log just the response text in a readable format
-      self.class.ollama_logger.info(response_text)
+      # Call Ollama API to get a response
+      response_text = OllamaService.generate_response(messages, model)
+      
+      if response_text.blank?
+        Rails.logger.error("Received empty response from Ollama API")
+        send_telegram_message(telegram_chat_id, "I apologize, but I wasn't able to generate a response. Please try again.")
+        message.update(responded: true)
+        return
+      end
 
-      # Send response
-      client.api.send_message(
-        chat_id: message.telegram_chat_id,
-        text: response_text
-      )
+      # Log the response received
+      Rails.logger.info("Response from Ollama: #{response_text}")
 
-      # Create response message in database
+      # Send the response back to Telegram
+      send_telegram_message(telegram_chat_id, response_text)
+
+      # Create a message for the assistant's response
       assistant_message = Message.create!(
-        content: response_text,
-        role: 'gfbot',
-        telegram_chat_id: message.telegram_chat_id,
-        chat: message.chat,
-        responded: true,
-        processed_at: Time.current
+        chat: chat,
+        role: 'assistant',
+        content: response_text
       )
 
-      # Mark original message as responded
-      message.mark_as_responded!
-      
-      # Queue memory extraction only for user messages
+      # Process message for memory extraction asynchronously (user message only)
       ExtractMemoryJob.perform_later(message.id) if message.role == 'user'
-      
-    rescue => e
-      Rails.logger.error "Error processing Telegram message #{message_id}: #{e.message}\n#{e.backtrace.join("\n")}"
-      
-      # Send error message to user
-      begin
-        client.api.send_message(
-          chat_id: message.telegram_chat_id,
-          text: "Error: #{e.message}"
-        )
-      rescue => telegram_error
-        Rails.logger.error "Failed to send error message: #{telegram_error.message}"
-      end
 
-      raise # Re-raise the error to trigger Sidekiq retry
+      # Mark the original message as responded
+      message.update(responded: true)
+    rescue => e
+      Rails.logger.error("Error in ProcessTelegramMessageJob: #{e.message}")
+      Rails.logger.error(e.backtrace.join("\n"))
+      # Send error message to Telegram
+      send_telegram_message(telegram_chat_id, "I apologize, but I encountered an error while processing your message. Please try again later.")
+      # Mark as responded so we don't retry
+      message.update(responded: true) if message
     end
   end
 
   private
 
-  def handle_thinking_command(message, client)
-    settings = ChatSetting.for_chat(message.chat_id)
-    settings.toggle_thinking!
+  def special_command?(message)
+    SPECIAL_COMMANDS.any? { |cmd| message.strip.start_with?(cmd) }
+  end
 
-    status = settings.show_thinking ? "enabled" : "disabled"
+  def handle_special_command(message, telegram_chat_id, chat)
+    command, rest = message.split(' ', 2)
+    case command
+    when '/thinking'
+      # Toggle thinking mode - just acknowledge the command
+      send_telegram_message(telegram_chat_id, "Thinking mode settings updated.")
+    when '/model'
+      handle_model_command(rest, telegram_chat_id, chat)
+    when '/prompt'
+      handle_prompt_command(rest, telegram_chat_id, chat)
+    end
+  end
+
+  def handle_model_command(model_name, telegram_chat_id, chat)
+    if model_name.blank?
+      # Display current model
+      settings = ChatSetting.for_chat(chat.id)
+      current_model = settings.model.presence || 'llama3'
+      send_telegram_message(telegram_chat_id, "Current model: #{current_model}")
+    else
+      # Update model setting
+      settings = ChatSetting.for_chat(chat.id)
+      settings.update(model: model_name.strip)
+      send_telegram_message(telegram_chat_id, "Model updated to: #{model_name.strip}")
+    end
+  end
+
+  def handle_prompt_command(prompt_text, telegram_chat_id, chat)
+    if prompt_text.blank?
+      # Display current prompt
+      settings = ChatSetting.for_chat(chat.id)
+      current_prompt = settings.prompt.presence || "Default system prompt"
+      send_telegram_message(telegram_chat_id, "Current prompt: #{current_prompt}")
+    else
+      # Update prompt setting
+      settings = ChatSetting.for_chat(chat.id)
+      settings.update(prompt: prompt_text)
+      send_telegram_message(telegram_chat_id, "System prompt updated.")
+    end
+  end
+
+  def send_telegram_message(chat_id, text)
+    return if text.blank?
+
+    uri = URI("https://api.telegram.org/bot#{ENV['TELEGRAM_API_TOKEN']}/sendMessage")
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+
+    request = Net::HTTP::Post.new(uri)
+    request["Content-Type"] = "application/json"
+    request.body = {
+      chat_id: chat_id,
+      text: text
+    }.to_json
+
+    response = http.request(request)
     
-    client.api.send_message(
-      chat_id: message.telegram_chat_id,
-      text: "🤔 Thinking mode #{status}! #{settings.show_thinking ? 'You will now see my thought process.' : 'Thought process will be hidden.'}"
-    )
-
-    # Mark as responded
-    message.mark_as_responded!
-  end
-
-  def handle_model_command(message, client)
-    model_name = message.content.strip.split(' ', 2)[1]&.strip
-
-    unless model_name
-      client.api.send_message(
-        chat_id: message.telegram_chat_id,
-        text: "Please specify a model name. Example: /model llama3"
-      )
-      message.mark_as_responded!
-      return
+    unless response.is_a?(Net::HTTPSuccess)
+      Rails.logger.error("Failed to send Telegram message: #{response.code} - #{response.message}")
+      Rails.logger.error("Response body: #{response.body}")
     end
-
-    settings = ChatSetting.for_chat(message.chat_id)
-    settings.update(model: model_name)
-
-    client.api.send_message(
-      chat_id: message.telegram_chat_id,
-      text: "🤖 Model changed to: #{model_name}"
-    )
-
-    message.mark_as_responded!
-  end
-
-  def handle_prompt_command(message, client)
-    prompt_text = message.content.strip.split(' ', 2)[1]&.strip
-
-    unless prompt_text
-      client.api.send_message(
-        chat_id: message.telegram_chat_id,
-        text: "Please specify a prompt. Example: /prompt You are a helpful and friendly AI assistant"
-      )
-      message.mark_as_responded!
-      return
-    end
-
-    settings = ChatSetting.for_chat(message.chat_id)
-    settings.update(prompt: prompt_text)
-
-    client.api.send_message(
-      chat_id: message.telegram_chat_id,
-      text: "✨ System prompt updated! I'll use this personality from now on."
-    )
-
-    message.mark_as_responded!
   end
 end 

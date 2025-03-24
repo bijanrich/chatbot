@@ -52,8 +52,21 @@ class PromptBuilderService
   private
   
   def memory_context
-    # Find recent and relevant memories
-    memories = MemoryFact.find_recent(@chat.id, limit: 5)
+    # Try to find memories using embeddings for better semantic matching
+    memories = if pgvector_available?
+      # Generate an embedding for the current message
+      embedding = OllamaService.generate_embedding(@message.content)
+      
+      if embedding.present?
+        MemoryFact.find_by_embedding(@chat.id, embedding, limit: 5)
+      else
+        # Fall back to recent memories if embedding fails
+        MemoryFact.find_recent(@chat.id, limit: 5)
+      end
+    else
+      # If pgvector is not available, use recent memories
+      MemoryFact.find_recent(@chat.id, limit: 5)
+    end
     
     return nil if memories.empty?
     
@@ -71,6 +84,12 @@ class PromptBuilderService
     end
     
     context
+  end
+  
+  def pgvector_available?
+    ActiveRecord::Base.connection.extension_enabled?('vector')
+  rescue
+    false
   end
 
   def system_prompt(settings)

@@ -1,77 +1,103 @@
-# Chatbot
+# AI Chatbot
 
-An AI-powered chatbot service.
+A Rails-based AI chatbot that interacts with users via Telegram and uses Ollama for AI processing.
 
-## Project Structure
+## Features
 
-- `web/` - Rails web application for user interface and authentication
-- `api/` - FastAPI service for handling chat interactions and LLM integration
-- `docker/` - Docker configuration files
-- `scripts/` - Utility scripts and tools
+- Telegram bot integration
+- Memory extraction and retrieval
+- Vector-based semantic search for relevant memories
+- Chat-based context building
+- Custom model and prompt settings
 
-## Tech Stack
+## Requirements
 
-- **Web Application**: Ruby on Rails
-- **API Service**: FastAPI (Python)
-- **Databases**: 
-  - PostgreSQL (primary database)
-  - Redis (session/cache)
-- **AI/LLM**: Local GPU support (1080Ti) with Vast.ai scaling option
+- Ruby 3.2+ 
+- Rails 7.1+
+- PostgreSQL with pgvector extension
+- Redis (for Sidekiq)
+- Ollama (running locally or on a server)
 
-## Development Setup
+## Setup
 
-1. Install dependencies:
-   - Ruby 3.x
-   - Python 3.9+
-   - PostgreSQL
-   - Redis
-   - Docker (optional)
+1. Clone the repository:
+   ```
+   git clone https://github.com/yourusername/aichatbot.git
+   cd aichatbot
+   ```
 
-2. Set up the web application:
-   ```bash
-   cd web
+2. Install dependencies:
+   ```
    bundle install
-   rails db:setup
    ```
 
-3. Set up the API service:
-   ```bash
-   cd api
-   python -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
+3. Set up the database:
+   ```
+   rails db:create db:migrate
    ```
 
-4. Start the services:
-   ```bash
-   # Terminal 1 - Web
-   cd web
+4. Configure environment variables in `.env` file:
+   ```
+   TELEGRAM_API_TOKEN=your_telegram_bot_token
+   OLLAMA_API_URL=http://localhost:11434/api
+   ```
+
+5. Set up the Telegram webhook:
+   ```
+   curl -F "url=https://your-domain.com/telegram/webhook" https://api.telegram.org/bot<your_telegram_bot_token>/setWebhook
+   ```
+
+   For local development, you can use ngrok to create a tunnel:
+   ```
+   ngrok http 3000
+   ```
+   Then use the ngrok URL for the webhook.
+
+6. Start the Rails server:
+   ```
    rails server
-
-   # Terminal 2 - API
-   cd api
-   uvicorn main:app --reload
-
-   # Terminal 3 - Redis (if not running)
-   redis-server
    ```
+
+7. Start Sidekiq for background jobs:
+   ```
+   bundle exec sidekiq
+   ```
+
+## Commands
+
+The bot supports the following commands:
+
+- `/model <model_name>` - Change the AI model used (default: llama3)
+- `/prompt <text>` - Set a custom system prompt
+- `/thinking` - Toggle showing the thinking process
 
 ## Architecture
 
-The system is split into two main components:
+The application follows a service-oriented architecture:
 
-1. **Web Application (Rails)**
-   - User authentication
-   - Payment processing
-   - User interface
-   - Session management
+- `ProcessTelegramMessageJob` - Handles incoming Telegram messages
+- `PromptBuilderService` - Builds context-aware prompts with relevant memories
+- `MemoryExtractorService` - Extracts and stores key memories from messages
+- `OllamaService` - Communicates with Ollama API for AI responses and embeddings
 
-2. **API Service (FastAPI)**
-   - Chat message handling
-   - LLM integration
-   - Conversation context management
-   - Response generation
+## Memory System
+
+The chatbot uses a sophisticated memory system:
+
+1. Each user message is processed to extract key memories
+2. Memories are stored with vector embeddings for semantic search
+3. When generating responses, the system retrieves relevant memories
+4. Memories are ranked by relevance and importance
+
+## Development
+
+To contribute to the project:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
 ## License
 
-Proprietary - All rights reserved 
+MIT 

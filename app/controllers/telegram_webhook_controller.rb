@@ -1,29 +1,28 @@
 require 'telegram/bot'
 
-class TelegramWebhookController < ActionController::API
+class TelegramWebhookController < ApplicationController
+  skip_before_action :verify_authenticity_token
+  
   def create
-    Rails.logger.info "Received Telegram webhook request with params: #{params.inspect}"
+    # Parse the incoming webhook data
+    data = JSON.parse(request.body.read)
     
-    begin
-      message = params.dig(:message)
-      chat_id = message&.dig(:chat, :id)
-      text = message&.dig(:text)
-
-      Rails.logger.info "Received message - chat_id: #{chat_id}, text: #{text}"
+    # Log the incoming webhook for debugging
+    Rails.logger.info("Received Telegram webhook: #{data.inspect}")
+    
+    # Check if this is a message
+    if data['message'] && data['message']['text']
+      # Extract the message content and chat ID
+      message_text = data['message']['text']
+      chat_id = data['message']['chat']['id']
       
-      if chat_id && text
-        # Store the message
-        stored_message = Message.create_from_telegram(chat_id, text)
-        
-        # Queue the job to process and respond to the message
-        ProcessTelegramMessageJob.perform_later(stored_message.id)
-      end
-
-      # Acknowledge receipt
-      head :ok
-    rescue => e
-      Rails.logger.error "Error in webhook: #{e.message}\n#{e.backtrace.join("\n")}"
-      head :ok
+      Rails.logger.info("Processing message: '#{message_text}' from chat ID: #{chat_id}")
+      
+      # Process the message asynchronously
+      ProcessTelegramMessageJob.perform_later(message_text, chat_id)
     end
+    
+    # Return a success response
+    render json: { status: 'ok' }
   end
 end 
