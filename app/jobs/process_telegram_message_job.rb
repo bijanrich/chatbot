@@ -49,8 +49,8 @@ class ProcessTelegramMessageJob < ApplicationJob
       # Get chat settings
       settings = ChatSetting.for_chat(message.chat_id)
 
-      # Build message array for Ollama
-      messages = build_messages_array(message)
+      # Build message array using PromptBuilderService
+      messages = PromptBuilderService.new(message).build
       
       # Log the messages before sending
       self.class.prompt_logger.info(JSON.pretty_generate(messages))
@@ -115,45 +115,6 @@ class ProcessTelegramMessageJob < ApplicationJob
   end
 
   private
-
-  def build_messages_array(message)
-    # Get chat settings for model
-    settings = ChatSetting.for_chat(message.chat_id)
-    
-    # Get the last few messages from the chat for context, excluding the current message
-    previous_messages = message.chat.messages
-                              .where('created_at < ?', message.created_at)
-                              .order(created_at: :desc)
-                              .limit(20)
-                              .reverse
-
-    # Build the messages array in structured format
-    messages = [
-      {
-        "role": "system",
-        "content": settings.prompt.presence || "You are a helpful and friendly AI assistant who keeps responses concise and engaging. " \
-                  "You aim to be helpful while maintaining a friendly tone. " \
-                  "Use emojis occasionally but not excessively. " \
-                  "Keep responses brief and to the point."
-      }
-    ]
-
-    # Add previous messages to the conversation
-    previous_messages.each do |msg|
-      messages << {
-        "role": msg.role == 'user' ? 'user' : 'system',
-        "content": msg.content
-      }
-    end
-
-    # Add the current user message
-    messages << {
-      "role": "user",
-      "content": message.content
-    }
-    
-    messages
-  end
 
   def handle_thinking_command(message, client)
     settings = ChatSetting.for_chat(message.chat_id)
