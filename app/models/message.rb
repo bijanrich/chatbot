@@ -8,9 +8,13 @@ class Message < ApplicationRecord
   scope :by_created_at, -> { order(created_at: :asc) }
 
   def self.create_from_telegram(telegram_chat_id, content)
-    # First find or create the chat
-    chat = Chat.find_or_create_by!(telegram_id: telegram_chat_id) do |c|
-      c.title = "Telegram Chat #{telegram_chat_id}"
+    # Find the active chat for this telegram_id
+    chat = Chat.find_by(telegram_id: telegram_chat_id, active: true)
+    
+    # If no active chat is found, create a new one (should never happen)
+    unless chat
+      Rails.logger.warn("No active chat found for telegram_id: #{telegram_chat_id}. Creating a new one.")
+      chat = Chat.create!(telegram_id: telegram_chat_id, title: "Telegram Chat #{telegram_chat_id}")
     end
     
     # Create the message with the chat

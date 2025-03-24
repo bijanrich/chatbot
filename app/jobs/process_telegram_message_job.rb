@@ -40,8 +40,13 @@ class ProcessTelegramMessageJob < ApplicationJob
         msg.update(content: telegram_message)
       end
     else
-      # Create new message
-      Message.create_from_telegram(telegram_chat_id, telegram_message)
+      # Create new message directly with the chat we found
+      Message.create!(
+        chat: chat,
+        role: 'user',
+        content: telegram_message,
+        telegram_chat_id: telegram_chat_id
+      )
     end
 
     # Get the custom model for this chat or use default

@@ -12,7 +12,11 @@ class Chat < ApplicationRecord
   scope :active, -> { where(active: true) }
 
   def self.find_or_create_by_telegram(telegram_id)
-    active.find_or_create_by(telegram_id: telegram_id)
+    # First try to find an active chat
+    chat = active.find_by(telegram_id: telegram_id)
+    
+    # If no active chat found, create a new one
+    chat || create!(telegram_id: telegram_id, active: true)
   end
   
   private

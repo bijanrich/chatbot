@@ -25,6 +25,10 @@ class PromptBuilderService
                              .limit(20)
                              .reverse
 
+    # Debug log to verify we're getting the right messages
+    Rails.logger.debug("Building prompt for chat #{@chat.id} (telegram_id: #{@chat.telegram_id}, active: #{@chat.active})")
+    Rails.logger.debug("Found #{previous_messages.size} previous messages for context")
+
     # Build the messages array in structured format
     messages = [
       {
