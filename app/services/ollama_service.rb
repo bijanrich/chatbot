@@ -55,6 +55,19 @@ class OllamaService
         unless response.is_a?(Net::HTTPSuccess)
           error_msg = "Ollama API returned non-200 status: #{response.code} - #{response.body}"
           Rails.logger.error(error_msg)
+          
+          # Handle model not found error
+          if response.body.include?("model") && response.body.include?("not found")
+            Rails.logger.warn("Model #{model} not found, falling back to #{DEFAULT_MODEL}")
+            
+            # Only retry with DEFAULT_MODEL if we weren't already using it
+            if model != DEFAULT_MODEL
+              return chat(messages: messages, model: DEFAULT_MODEL, stream: stream)
+            else
+              raise "Default model #{DEFAULT_MODEL} not found. Please ensure it is pulled: ollama pull #{DEFAULT_MODEL}"
+            end
+          end
+          
           raise error_msg
         end
 
@@ -107,6 +120,19 @@ class OllamaService
       rescue => e
         Rails.logger.error("Error in OllamaService.chat: #{e.class} - #{e.message}")
         Rails.logger.error(e.backtrace.join("\n"))
+        
+        # Handle model not found error from exception
+        if e.message.include?("model") && e.message.include?("not found")
+          Rails.logger.warn("Model #{model} not found, falling back to #{DEFAULT_MODEL}")
+          
+          # Only retry with DEFAULT_MODEL if we weren't already using it
+          if model != DEFAULT_MODEL
+            return chat(messages: messages, model: DEFAULT_MODEL, stream: stream)
+          else
+            raise "Default model #{DEFAULT_MODEL} not found. Please ensure it is pulled: ollama pull #{DEFAULT_MODEL}"
+          end
+        end
+        
         raise
       end
     end
@@ -200,6 +226,26 @@ class OllamaService
       end
       
       nil
+    end
+
+    def make_chat_request(messages, model)
+      url = "#{BASE_URL}/chat"
+      response = HTTParty.post(url, json: { 
+        model: model,
+        messages: messages,
+        stream: false
+      })
+      
+      unless response.success?
+        raise "Ollama API returned non-200 status: #{response.code} - #{response.body}"
+      end
+      
+      response
+    end
+
+    def handle_chat_response(response)
+      json_response = JSON.parse(response.body.to_s)
+      json_response["message"]["content"]
     end
   end
 end 
