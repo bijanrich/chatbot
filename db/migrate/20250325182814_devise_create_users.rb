@@ -33,7 +33,6 @@ class DeviseCreateUsers < ActiveRecord::Migration[7.1]
       t.datetime :locked_at
 
       t.string :username
-      t.string :onlyfans_username
       t.string :account_type
 
       t.timestamps null: false

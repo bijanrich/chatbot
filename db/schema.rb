@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_03_25_191403) do
+ActiveRecord::Schema[7.1].define(version: 2025_03_25_223009) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "vector"
@@ -51,7 +51,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_25_191403) do
     t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
     t.index ["organization_id"], name: "index_creator_profiles_on_organization_id"
+    t.index ["user_id"], name: "index_creator_profiles_on_user_id"
   end
 
   create_table "memberships", force: :cascade do |t|
@@ -177,20 +179,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_25_191403) do
     t.string "unlock_token"
     t.datetime "locked_at"
     t.string "username"
-    t.string "onlyfans_username"
     t.string "account_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "onlyfans_id"
-    t.string "profile_url"
-    t.text "bio"
-    t.datetime "last_active"
-    t.integer "message_rate"
-    t.integer "max_daily_messages"
-    t.integer "response_delay_min"
-    t.integer "response_delay_max"
-    t.integer "active_conversations"
-    t.integer "total_messages_sent"
     t.string "provider"
     t.string "uid"
     t.string "name"
@@ -202,6 +193,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_25_191403) do
   add_foreign_key "chat_settings", "personas"
   add_foreign_key "conversation_summaries", "chats"
   add_foreign_key "creator_profiles", "organizations"
+  add_foreign_key "creator_profiles", "users"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
   add_foreign_key "memory_facts", "chats"

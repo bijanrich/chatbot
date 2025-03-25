@@ -7,8 +7,24 @@ class User < ApplicationRecord
 
   has_many :memberships, dependent: :destroy
   has_many :organizations, through: :memberships
+  has_one :creator_profile, dependent: :destroy
 
   validates :email, presence: true, uniqueness: true
+  
+  # User role helpers
+  def agency_user?
+    memberships.exists?(role: ['admin', 'owner'])
+  end
+  
+  def creator?
+    creator_profile.present?
+  end
+  
+  def role
+    return 'agency' if agency_user?
+    return 'creator' if creator?
+    'user' # default role
+  end
   
   def admin_of?(organization)
     memberships.exists?(organization: organization, role: 'admin')

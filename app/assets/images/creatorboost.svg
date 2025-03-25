@@ -1,0 +1,5 @@
+<svg width="180" height="40" viewBox="0 0 180 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M20.5 8C13.8726 8 8.5 13.3726 8.5 20C8.5 26.6274 13.8726 32 20.5 32C27.1274 32 32.5 26.6274 32.5 20C32.5 13.3726 27.1274 8 20.5 8ZM27.7 23.7L23.2 19.2V14H17.8V20.8L23.3 26.3C21.9 27.3 20.2 28 18.5 28C14.1 28 10.5 24.4 10.5 20C10.5 15.6 14.1 12 18.5 12C22.9 12 26.5 15.6 26.5 20C26.5 21.3 26.2 22.6 25.7 23.7L27.7 23.7Z" fill="#6366F1"/>
+  <text x="45" y="26" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#111827">creator<tspan fill="#6366F1">boost</tspan></text>
+  <path d="M165 16L171 20L165 24" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg> 

@@ -1,7 +1,13 @@
 require 'sidekiq/web'
 
 Rails.application.routes.draw do
-  # Set the root path to the home index page
+  # Authenticated routes
+  authenticated :user do
+    root 'dashboard#index', as: :authenticated_root
+    get 'dashboard', to: 'dashboard#index', as: :dashboard
+  end
+  
+  # Set the root path to the home index page for non-authenticated users
   root 'home#index'
   
   get 'home/index'
