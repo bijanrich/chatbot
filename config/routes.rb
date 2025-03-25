@@ -1,6 +1,11 @@
 require 'sidekiq/web'
 
 Rails.application.routes.draw do
+  # Set the root path to the home index page
+  root 'home#index'
+  
+  get 'home/index'
+  devise_for :users
   # Mount Sidekiq web UI
   mount Sidekiq::Web => '/sidekiq' if Rails.env.development?
 
@@ -13,8 +18,12 @@ Rails.application.routes.draw do
       post :message, on: :collection
       get :history, on: :member
     end
-    
+
     resources :memories, only: [:index, :create]
+
+    namespace :v1 do
+      post 'onlyfans/generate_response', to: 'onlyfans_messages#generate_response'
+    end
   end
 
   # Health check

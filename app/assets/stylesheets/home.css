@@ -1,0 +1,9 @@
+/* Home page specific styles */
+:root {
+    --primary: #ff4d8f;
+    --secondary: #7c3aed;
+    --dark: #1f2937;
+    --light: #f9fafb;
+}
+
+/* Additional styles can be added here */ 

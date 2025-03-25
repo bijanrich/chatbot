@@ -61,3 +61,19 @@ gem "sidekiq-scheduler", "~> 5.0"
 gem "pgvector", "~> 0.3.2"
 
 gem 'httparty'
+
+gem "devise", "~> 4.9"
+
+gem "omniauth", "~> 2.1"
+gem "omniauth-google-oauth2", "~> 1.2"
+gem "omniauth-rails_csrf_protection", "~> 1.0"
+
+gem "tailwindcss-rails", "~> 4.2"
+
+gem "importmap-rails", "~> 2.1"
+gem "turbo-rails", "~> 2.0"
+gem "stimulus-rails", "~> 1.3"
+
+gem "sprockets-rails", "~> 3.5"
+
+gem "jsbundling-rails", "~> 1.3"

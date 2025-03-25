@@ -23,8 +23,8 @@ module Railsapi
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.1
 
-    # API-only application
-    config.api_only = true
+    # No longer an API-only application
+    config.api_only = false
 
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration can go into files in config/initializers

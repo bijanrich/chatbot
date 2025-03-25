@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_03_25_003736) do
+ActiveRecord::Schema[7.1].define(version: 2025_03_25_191403) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "vector"
@@ -20,7 +20,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_25_003736) do
     t.boolean "show_thinking", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "model", default: "llama3"
+    t.string "model", default: "mistral-small"
     t.string "ollama_ip"
     t.text "prompt"
     t.text "persona"
@@ -44,6 +44,26 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_25_003736) do
 # Could not dump table "conversation_summaries" because of following StandardError
 #   Unknown type 'vector(384)' for column 'embedding'
 
+  create_table "creator_profiles", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.string "name"
+    t.string "onlyfans_username"
+    t.string "status"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_creator_profiles_on_organization_id"
+  end
+
+  create_table "memberships", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "organization_id", null: false
+    t.string "role"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_memberships_on_organization_id"
+    t.index ["user_id"], name: "index_memberships_on_user_id"
+  end
+
 # Could not dump table "memory_facts" because of following StandardError
 #   Unknown type 'vector(384)' for column 'embedding'
 
@@ -59,6 +79,15 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_25_003736) do
     t.index ["chat_id"], name: "index_messages_on_chat_id"
     t.index ["responded"], name: "index_messages_on_responded"
     t.index ["telegram_chat_id"], name: "index_messages_on_telegram_chat_id"
+  end
+
+  create_table "organizations", force: :cascade do |t|
+    t.string "name"
+    t.string "slug"
+    t.string "billing_email"
+    t.string "stripe_customer_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "personas", force: :cascade do |t|
@@ -107,6 +136,16 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_25_003736) do
     t.index ["key"], name: "index_settings_on_key", unique: true
   end
 
+  create_table "subscriptions", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.string "status"
+    t.string "plan_name"
+    t.string "stripe_subscription_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_subscriptions_on_organization_id"
+  end
+
   create_table "telegram_messages", force: :cascade do |t|
     t.bigint "chat_id", null: false
     t.text "text", null: false
@@ -119,12 +158,56 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_25_003736) do
     t.index ["responded"], name: "index_telegram_messages_on_responded"
   end
 
+  create_table "users", force: :cascade do |t|
+    t.string "email", default: "", null: false
+    t.string "encrypted_password", default: "", null: false
+    t.string "reset_password_token"
+    t.datetime "reset_password_sent_at"
+    t.datetime "remember_created_at"
+    t.integer "sign_in_count", default: 0, null: false
+    t.datetime "current_sign_in_at"
+    t.datetime "last_sign_in_at"
+    t.string "current_sign_in_ip"
+    t.string "last_sign_in_ip"
+    t.string "confirmation_token"
+    t.datetime "confirmed_at"
+    t.datetime "confirmation_sent_at"
+    t.string "unconfirmed_email"
+    t.integer "failed_attempts", default: 0, null: false
+    t.string "unlock_token"
+    t.datetime "locked_at"
+    t.string "username"
+    t.string "onlyfans_username"
+    t.string "account_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "onlyfans_id"
+    t.string "profile_url"
+    t.text "bio"
+    t.datetime "last_active"
+    t.integer "message_rate"
+    t.integer "max_daily_messages"
+    t.integer "response_delay_min"
+    t.integer "response_delay_max"
+    t.integer "active_conversations"
+    t.integer "total_messages_sent"
+    t.string "provider"
+    t.string "uid"
+    t.string "name"
+    t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+  end
+
   add_foreign_key "chat_settings", "chats"
   add_foreign_key "chat_settings", "personas"
   add_foreign_key "conversation_summaries", "chats"
+  add_foreign_key "creator_profiles", "organizations"
+  add_foreign_key "memberships", "organizations"
+  add_foreign_key "memberships", "users"
   add_foreign_key "memory_facts", "chats"
   add_foreign_key "memory_facts", "messages"
   add_foreign_key "messages", "chats"
   add_foreign_key "psychological_analyses", "chats"
   add_foreign_key "relationship_states", "chats"
+  add_foreign_key "subscriptions", "organizations"
 end

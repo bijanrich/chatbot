@@ -29,8 +29,8 @@ class ProcessTelegramMessageJob < ApplicationJob
     # Check if this is a command
     if telegram_message.start_with?('/')
       handle_command(telegram_message, telegram_chat_id, chat)
-      return
-    end
+        return
+      end
 
     # Create a new message in the database
     if message_id.present?
@@ -55,9 +55,9 @@ class ProcessTelegramMessageJob < ApplicationJob
         content: telegram_message,
         telegram_chat_id: telegram_chat_id
       )
-    end
+      end
 
-    # Get chat settings
+      # Get chat settings
     settings = ChatSetting.for_chat(chat.id)
     
     # Record interaction with persona for relationship tracking

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat Assistant for Creators</title>
+    <style>
+        :root {
+            --primary: #ff4d8f;
+            --secondary: #7c3aed;
+            --dark: #1f2937;
+            --light: #f9fafb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .nav-links a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+        }
+
+        .hero {
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+
+        .features {
+            padding: 80px 0;
+            background-color: white;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            text-align: center;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .feature-card h3 {
+            margin: 20px 0;
+            color: var(--primary);
+        }
+
+        .pricing {
+            padding: 80px 0;
+        }
+
+        .pricing h2 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .pricing-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .pricing-card h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .price {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 20px 0;
+        }
+
+        .pricing-card ul {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        .pricing-card li {
+            padding: 5px 0;
+        }
+
+        .testimonials {
+            padding: 80px 0;
+            background-color: white;
+        }
+
+        .testimonials h2 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .testimonial-card {
+            background-color: var(--light);
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .testimonial-card p {
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+
+        .testimonial-author {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .cta {
+            padding: 80px 0;
+            text-align: center;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .cta h2 {
+            margin-bottom: 20px;
+        }
+
+        .cta .btn {
+            background-color: white;
+            color: var(--primary);
+            margin-top: 20px;
+        }
+
+        footer {
+            padding: 40px 0;
+            text-align: center;
+            background-color: var(--dark);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">AICreatorChat</div>
+            <nav class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#testimonials">Testimonials</a>
+                <a href="#" class="btn">Get Started</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>10X YOUR CREATOR ENGAGEMENT WITH AI</h1>
+            <p>Our AI-powered chatbot helps creators respond to fans 24/7, boost engagement, and increase revenue from subscriptions and tips.</p>
+            <a href="#" class="btn">Install Chrome Extension</a>
+            <a href="#" class="btn btn-secondary">Sign Up Free</a>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <h2 style="text-align: center;">Why Choose AICreatorChat?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>AI Trained on Top Earners</h3>
+                    <p>Our AI is trained on communication patterns from the top 0.01% earning creators to maximize engagement and conversion.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Boost Tips & PPV Sales</h3>
+                    <p>Creators report up to 10x increase in PPV sales and 5x more tips using our AI chat assistant.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Super Easy to Use</h3>
+                    <p>Simple Chrome extension setup with one-click response generation that sounds exactly like you.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Customizable Persona</h3>
+                    <p>Choose from multiple persona templates or create your own unique voice to match your brand.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Works With Your Platforms</h3>
+                    <p>Seamlessly integrates with top creator platforms to help you manage all your fan communications.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>24/7 Fan Engagement</h3>
+                    <p>Never miss a message again - our AI responds even when you're asleep or busy creating content.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <h2>Simple, Transparent Pricing</h2>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Basic</h3>
+                    <div class="price">$15<span>/month</span></div>
+                    <ul>
+                        <li>2,000 AI responses</li>
+                        <li>Human-like AI</li>
+                        <li>Chrome Extension</li>
+                        <li>Basic Customization</li>
+                    </ul>
+                    <a href="#" class="btn">Get Started</a>
+                </div>
+                <div class="pricing-card">
+                    <h3>Premium</h3>
+                    <div class="price">$49<span>/month</span></div>
+                    <ul>
+                        <li>5,000 AI responses</li>
+                        <li>Advanced Human-like AI</li>
+                        <li>Chrome Extension</li>
+                        <li>Full Customization</li>
+                        <li>Priority Support</li>
+                    </ul>
+                    <a href="#" class="btn">Get Started</a>
+                </div>
+                <div class="pricing-card">
+                    <h3>VIP</h3>
+                    <div class="price">$99<span>/month</span></div>
+                    <ul>
+                        <li>10,000 AI responses</li>
+                        <li>Premium Human-like AI</li>
+                        <li>Chrome Extension</li>
+                        <li>Full Customization</li>
+                        <li>Priority Support</li>
+                        <li>Revenue Analytics</li>
+                    </ul>
+                    <a href="#" class="btn">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonials" id="testimonials">
+        <div class="container">
+            <h2>What Creators Are Saying</h2>
+            <div class="testimonial-grid">
+                <div class="testimonial-card">
+                    <p>"Since using AICreatorChat, my subscriber retention has gone up 40% and I'm making twice as much from tips. It's like having an assistant who knows exactly what to say."</p>
+                    <div class="testimonial-author">Sophia, Content Creator</div>
+                </div>
+                <div class="testimonial-card">
+                    <p>"Our agency uses AICreatorChat for multiple clients now. It's incredibly user-friendly and we've seen revenue increase for every creator within the first month."</p>
+                    <div class="testimonial-author">Michael, Agency Owner</div>
+                </div>
+                <div class="testimonial-card">
+                    <p>"I was drowning in messages and losing subscribers because I couldn't keep up. This AI tool saved my business and has doubled my income."</p>
+                    <div class="testimonial-author">@stellarcreator</div>
+                </div>
+                <div class="testimonial-card">
+                    <p>"The AI responses are so natural that my fans can't tell the difference. I've been able to scale my content creation while maintaining personal connections."</p>
+                    <div class="testimonial-author">Alex, Fitness Creator</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to 10x Your Creator Income?</h2>
+            <p>Join thousands of creators already using AICreatorChat</p>
+            <a href="#" class="btn">Get Started For Free</a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 AICreatorChat. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,3 +1,3 @@
-class ApplicationController < ActionController::API
-  # API-only base controller
+class ApplicationController < ActionController::Base
+  # Controller with full Rails functionality
 end
