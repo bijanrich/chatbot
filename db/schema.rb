@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_03_24_224727) do
+ActiveRecord::Schema[7.1].define(version: 2025_03_25_003736) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "vector"
@@ -96,6 +96,15 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_24_224727) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["chat_id"], name: "index_relationship_states_on_chat_id"
+  end
+
+  create_table "settings", force: :cascade do |t|
+    t.string "key", null: false
+    t.text "value"
+    t.string "data_type", default: "string"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["key"], name: "index_settings_on_key", unique: true
   end
 
   create_table "telegram_messages", force: :cascade do |t|

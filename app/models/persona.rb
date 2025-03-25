@@ -164,9 +164,13 @@ class Persona < ApplicationRecord
     prompt
   end
 
-  # Get the complete prompt including personality aspects and relationship context
+  # Get the complete prompt including global prompt, personality aspects, and relationship context
   def full_prompt(chat = nil)
-    prompt = default_prompt
+    # Start with the global prompt that applies to all personas
+    prompt = "#{Setting.global_prompt}\n\n"
+    
+    # Add persona-specific prompt
+    prompt += default_prompt
     prompt += "\n\n" + personality_prompt
     
     # Add relationship context if chat is provided

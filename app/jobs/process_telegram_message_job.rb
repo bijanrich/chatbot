@@ -3,7 +3,7 @@ class ProcessTelegramMessageJob < ApplicationJob
   require 'net/http'
   require 'json'
   require 'logger'
-  SPECIAL_COMMANDS = ['/thinking', '/model', '/prompt', '/persona', '/logs', '/clear', '/relationship', '/help', '/commands', '/memory'].freeze
+  SPECIAL_COMMANDS = ['/thinking', '/model', '/prompt', '/persona', '/logs', '/clear', '/relationship', '/help', '/commands', '/memory', '/global_prompt'].freeze
   
   def self.ollama_logger
     @@ollama_logger ||= Logger.new(Rails.root.join('log', 'ollama_responses.log')).tap do |logger|
@@ -164,6 +164,8 @@ class ProcessTelegramMessageJob < ApplicationJob
       handle_relationship_command(telegram_chat_id, chat)
     when '/memory'
       handle_memory_command(telegram_chat_id, chat)
+    when '/global_prompt'
+      handle_global_prompt_command(rest, telegram_chat_id, chat)
     when '/help', '/commands'
       handle_help_command(telegram_chat_id, chat)
     else
@@ -553,6 +555,18 @@ class ProcessTelegramMessageJob < ApplicationJob
     end
   end
 
+  def handle_global_prompt_command(prompt_text, telegram_chat_id, chat)
+    if prompt_text.blank?
+      # Display current global prompt
+      current_prompt = Setting.global_prompt
+      send_telegram_message(telegram_chat_id, "Current global prompt:\n\n#{current_prompt}\n\nThis prompt is prepended to all persona prompts.")
+    else
+      # Update global prompt
+      Setting.global_prompt = prompt_text
+      send_telegram_message(telegram_chat_id, "Global prompt updated. This will affect all conversations with all personas.")
+    end
+  end
+
   def handle_help_command(telegram_chat_id, chat)
     settings = ChatSetting.for_chat(chat.id)
     persona = settings.persona&.name || "AI"
@@ -569,6 +583,8 @@ class ProcessTelegramMessageJob < ApplicationJob
       /persona [name] - Switch to a different persona
       /relationship - View your relationship with #{persona}
       /memory - View your complete memory profile
+      /global_prompt - View shared prompt for all personas
+      /global_prompt [text] - Set shared prompt for all personas
       /clear - Clear chat history and start fresh
       /logs prompt - View last prompt sent
       /logs response - View last AI response
