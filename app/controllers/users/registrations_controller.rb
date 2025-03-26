@@ -8,16 +8,20 @@ class Users::RegistrationsController < Devise::RegistrationsController
 
   # POST /resource
   def create
+    # Build the user first but don't save
     build_resource(sign_up_params)
-    
+
+    # Create organization first
+    org = Organization.create!(
+      name: "#{resource.name}'s Organization",
+      billing_email: resource.email
+    )
+
+    # Assign organization to user
+    resource.organization = org
+
+    # Now try to save the user
     if resource.save
-      # Create an organization for every user
-      org = Organization.create!(
-        name: "#{resource.name}'s Organization",
-        billing_email: resource.email
-      )
-      resource.update(organization: org)
-      
       yield resource if block_given?
       if resource.active_for_authentication?
         set_flash_message! :notice, :signed_up
@@ -29,6 +33,8 @@ class Users::RegistrationsController < Devise::RegistrationsController
         respond_with resource, location: after_inactive_sign_up_path_for(resource)
       end
     else
+      # If user save fails, destroy the organization to prevent orphaned records
+      org.destroy
       clean_up_passwords resource
       set_minimum_password_length
       respond_with resource
