@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Chat Assistant for Creators</title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
     <style>
         :root {
             --primary: #6366F1;
@@ -147,6 +151,13 @@
             background-color: white;
         }
         
+        .features h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: var(--dark);
+        }
+        
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -159,11 +170,27 @@
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            background: white;
+            transition: transform 0.2s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
         }
         
         .feature-card h3 {
             margin: 20px 0;
             color: var(--primary);
+            font-size: 1.5rem;
+        }
+        
+        .feature-card p {
+            color: #4B5563;
         }
         
         .pricing {
@@ -283,12 +310,11 @@
             <%= link_to "FanPilot", root_path, class: "logo" %>
             <nav class="nav-links">
                 <% if user_signed_in? %>
-                    <%= link_to "Dashboard", "#" %>
-                    <%= link_to "Settings", edit_user_registration_path %>
+                    <%= link_to "Dashboard", dashboard_path %>
                     <%= button_to "Sign out", destroy_user_session_path, method: :delete, class: "btn" %>
                 <% else %>
                     <%= link_to "Sign in", new_user_session_path %>
-                    <%= link_to "Sign up", new_user_registration_path, class: "btn" %>
+                    <%= link_to "Get Started", new_user_registration_path, class: "btn" %>
                 <% end %>
             </nav>
         </div>
@@ -296,42 +322,33 @@
 
     <section class="hero">
         <div class="container">
-            <h1>Supercharge Your Creator Business with <span>AI</span></h1>
-            <p>Engage with your audience more effectively using our AI-powered chat assistant designed specifically for content creators.</p>
+            <h1>Supercharge Your Content Creation with <span>AI</span></h1>
+            <p>Engage your audience like never before with personalized, AI-powered responses that feel authentic and drive growth.</p>
             <div class="hero-buttons">
                 <%= link_to "Get Started", new_user_registration_path, class: "btn" %>
-                <%= link_to "Learn More", "#", class: "btn btn-secondary" %>
+                <%= link_to "Learn More", "#features", class: "btn btn-secondary" %>
             </div>
         </div>
     </section>
     
     <section class="features" id="features">
         <div class="container">
-            <h2 style="text-align: center;">Why Choose FanPilot?</h2>
+            <h2>Why Choose FanPilot?</h2>
             <div class="features-grid">
                 <div class="feature-card">
-                    <h3>AI Trained on Top Earners</h3>
-                    <p>Our AI is trained on communication patterns from the top 0.01% earning creators to maximize engagement and conversion.</p>
+                    <div class="feature-icon">🤖</div>
+                    <h3>AI-Powered Responses</h3>
+                    <p>Generate engaging, personalized responses that maintain your unique voice and style.</p>
                 </div>
                 <div class="feature-card">
-                    <h3>Boost Tips & PPV Sales</h3>
-                    <p>Creators report up to 10x increase in PPV sales and 5x more tips using our AI chat assistant.</p>
+                    <div class="feature-icon">⚡️</div>
+                    <h3>Lightning Fast</h3>
+                    <p>Respond to your audience quickly and efficiently, without sacrificing quality.</p>
                 </div>
                 <div class="feature-card">
-                    <h3>Super Easy to Use</h3>
-                    <p>Simple Chrome extension setup with one-click response generation that sounds exactly like you.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>Customizable Persona</h3>
-                    <p>Choose from multiple persona templates or create your own unique voice to match your brand.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>Works With Your Platforms</h3>
-                    <p>Seamlessly integrates with top creator platforms to help you manage all your fan communications.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>24/7 Fan Engagement</h3>
-                    <p>Never miss a message again - our AI responds even when you're asleep or busy creating content.</p>
+                    <div class="feature-icon">📈</div>
+                    <h3>Grow Your Audience</h3>
+                    <p>Increase engagement and build stronger connections with your followers.</p>
                 </div>
             </div>
         </div>

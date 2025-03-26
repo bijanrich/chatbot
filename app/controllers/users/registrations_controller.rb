@@ -11,37 +11,51 @@ class Users::RegistrationsController < Devise::RegistrationsController
     # Store user_type before calling super since it's not a User attribute
     user_type = params[:user_type]
     
-    super do |user|
-      if user.persisted? && user_type.present?
+    build_resource(sign_up_params)
+    
+    if resource.save
+      if user_type.present?
         case user_type
         when 'creator'
           # For creators, we create an organization automatically
           org = Organization.create!(
-            name: "#{user.name}'s Creator Account",
-            billing_email: user.email
+            name: "#{resource.name}'s Creator Account",
+            billing_email: resource.email
           )
-          user.update(organization: org)
+          resource.update(organization: org)
           
           # Create a creator profile
           CreatorProfile.create!(
             organization: org,
-            user: user,
-            name: user.name,
-            onlyfans_username: user.name.parameterize,
+            user: resource,
+            name: resource.name,
+            onlyfans_username: resource.name.parameterize,
             status: 'active'
           )
           
         when 'agency'
           # For agency owners, we create an agency organization
           org = Organization.create!(
-            name: "#{user.name}'s Agency",
-            billing_email: user.email
+            name: "#{resource.name}'s Agency",
+            billing_email: resource.email
           )
-          user.update(organization: org)
+          resource.update(organization: org)
         end
       end
-      # Send welcome email after successful registration
-      EmailService.send_welcome_email(user) if user.persisted?
+
+      if is_navigational_format?
+        if resource.active_for_authentication?
+          set_flash_message! :notice, :signed_up
+        else
+          set_flash_message! :notice, :"signed_up_but_#{resource.inactive_message}"
+        end
+      end
+
+      respond_with resource, location: after_sign_up_path_for(resource)
+    else
+      clean_up_passwords resource
+      set_minimum_password_length
+      respond_with resource
     end
   end
 
@@ -49,5 +63,10 @@ class Users::RegistrationsController < Devise::RegistrationsController
 
   def configure_sign_up_params
     devise_parameter_sanitizer.permit(:sign_up, keys: [:name])
+  end
+
+  # The path used after sign up
+  def after_sign_up_path_for(resource)
+    root_path
   end
 end

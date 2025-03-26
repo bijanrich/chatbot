@@ -1,5 +1,6 @@
 class CreatorProfile < ApplicationRecord
   belongs_to :organization
+  belongs_to :user
 
   STATUSES = %w[active inactive pending suspended].freeze
 
