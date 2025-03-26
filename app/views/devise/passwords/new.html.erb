@@ -1,23 +1,147 @@
 <div class="auth-container">
   <div class="auth-card">
-    <h1 class="logo-text">FanPilot</h1>
+    <div class="logo-container">
+      <div class="logo">FanPilot 🚀</div>
+    </div>
     
-    <h2 class="auth-title">Reset Password</h2>
+    <h2>Reset Password</h2>
     <p class="auth-subtitle">We'll send you instructions to reset your password</p>
 
     <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post, class: "auth-form" }) do |f| %>
       <%= render "devise/shared/error_messages", resource: resource %>
 
       <div class="form-group">
-        <%= f.label :email, class: "form-label" %>
-        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-input", placeholder: "johnDoe@email.com" %>
+        <%= f.label :email %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control", placeholder: "your@email.com" %>
       </div>
 
-      <%= f.submit "Send reset instructions", class: "auth-button" %>
-
-      <div class="auth-links">
-        <%= link_to "Back to sign in", new_session_path(resource_name) %>
+      <div class="form-actions">
+        <%= f.submit "Send reset instructions", class: "btn-primary" %>
       </div>
     <% end %>
+
+    <div class="auth-links">
+      <%= link_to "Log in", new_session_path(resource_name) %><br />
+      <%= link_to "Sign up", new_registration_path(resource_name) %><br />
+      <%= link_to "Didn't receive confirmation instructions?", new_confirmation_path(resource_name) %>
+    </div>
   </div>
 </div>
+
+<style>
+  .auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f9fafb;
+    padding: 20px;
+  }
+  
+  .auth-card {
+    width: 100%;
+    max-width: 480px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+  }
+  
+  .logo-container {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .logo {
+    font-size: 28px;
+    font-weight: 700;
+    color: #6C47FF;
+  }
+  
+  h2 {
+    color: #111827;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  
+  .auth-subtitle {
+    text-align: center;
+    color: #6b7280;
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+  
+  .auth-form {
+    margin-bottom: 20px;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 6px;
+  }
+  
+  .form-control {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 16px;
+    line-height: 1.5;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  
+  .form-control:focus {
+    border-color: #6C47FF;
+    box-shadow: 0 0 0 3px rgba(108, 71, 255, 0.2);
+  }
+  
+  .form-actions {
+    margin-top: 30px;
+  }
+  
+  .btn-primary {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: center;
+    background-color: #6C47FF;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-primary:hover {
+    background-color: #5B3DD8;
+  }
+  
+  .auth-links {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 14px;
+    color: #6b7280;
+  }
+  
+  .auth-links a {
+    color: #6C47FF;
+    text-decoration: none;
+    line-height: 1.8;
+  }
+  
+  .auth-links a:hover {
+    text-decoration: underline;
+  }
+</style>
