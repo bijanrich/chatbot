@@ -1,49 +1,42 @@
 <div class="auth-container">
-  <div class="auth-card">
-    <h1 class="logo-text">FanPilot</h1>
-    
-    <h2 class="auth-title">Create a new account</h2>
-    <p class="auth-subtitle">It takes less than two minutes to sign up</p>
+  <div class="auth-form-container">
+    <div class="auth-header">
+      <h1>Sign up</h1>
+      <p>Create your account to get started</p>
+    </div>
 
     <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "auth-form" }) do |f| %>
-      <%= render "devise/shared/error_messages", resource: resource %>
+      <% if resource.errors.any? %>
+        <div class="alert alert-danger mb-4">
+          <h4 class="alert-heading">
+            <%= pluralize(resource.errors.count, "error") %> prevented you from signing up:
+          </h4>
+          <ul class="mb-0">
+            <% resource.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
 
       <div class="form-group">
         <%= f.label :name, class: "form-label" %>
-        <%= f.text_field :name, autofocus: true, class: "form-input", placeholder: "John Doe" %>
+        <%= f.text_field :name, class: "form-control", placeholder: "Your full name", required: true %>
       </div>
 
       <div class="form-group">
         <%= f.label :email, class: "form-label" %>
-        <%= f.email_field :email, autocomplete: "email", class: "form-input", placeholder: "johnDoe@email.com" %>
+        <%= f.email_field :email, class: "form-control", placeholder: "Your email address", required: true %>
       </div>
 
       <div class="form-group">
         <%= f.label :password, class: "form-label" %>
-        <%= f.password_field :password, autocomplete: "new-password", class: "form-input", placeholder: "••••••••" %>
+        <%= f.password_field :password, class: "form-control", placeholder: "Create a password (8+ characters)", required: true %>
       </div>
 
       <div class="form-group">
-        <%= f.label :user_type, "I want to join as:", class: "form-label" %>
-        <div class="role-options">
-          <%= radio_button_tag :user_type, "creator", false, class: "role-radio", id: "type-creator" %>
-          <%= label_tag :user_type_creator, class: "role-label", for: "type-creator" do %>
-            <div class="role-icon">👩‍🎨</div>
-            <div class="role-text">
-              <strong>Creator</strong>
-              <span>I create content and want to grow my business</span>
-            </div>
-          <% end %>
-
-          <%= radio_button_tag :user_type, "agency", false, class: "role-radio", id: "type-agency" %>
-          <%= label_tag :user_type_agency, class: "role-label", for: "type-agency" do %>
-            <div class="role-icon">🏢</div>
-            <div class="role-text">
-              <strong>Agency</strong>
-              <span>I manage multiple creators</span>
-            </div>
-          <% end %>
-        </div>
+        <%= f.label :password_confirmation, "Confirm password", class: "form-label" %>
+        <%= f.password_field :password_confirmation, class: "form-control", placeholder: "Confirm your password", required: true %>
       </div>
 
       <%= f.submit "Sign up", class: "auth-button" %>

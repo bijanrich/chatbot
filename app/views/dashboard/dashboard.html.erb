@@ -4,8 +4,8 @@
   <!-- Main Content -->
   <main class="main-content">
     <div class="page-header">
-      <h1 class="page-title">Agency Dashboard</h1>
-      <p class="page-subtitle">Welcome to your agency dashboard, <%= current_user.name || current_user.email.split('@').first %></p>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Welcome to your dashboard, <%= current_user.name || current_user.email.split('@').first %></p>
     </div>
 
     <!-- Stats Overview -->
@@ -13,7 +13,7 @@
       <div class="stat-card">
         <div class="card-body">
           <div class="stat-label">Total Creators</div>
-          <div class="stat-value"><%= @agency_stats[:total_creators] %></div>
+          <div class="stat-value"><%= @dashboard_stats[:total_creators] %></div>
           <div class="stat-trend trend-up">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
@@ -26,7 +26,7 @@
       <div class="stat-card">
         <div class="card-body">
           <div class="stat-label">Active Creators</div>
-          <div class="stat-value"><%= @agency_stats[:active_creators] %></div>
+          <div class="stat-value"><%= @dashboard_stats[:active_creators] %></div>
           <div class="stat-trend trend-up">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
@@ -39,12 +39,12 @@
       <div class="stat-card">
         <div class="card-body">
           <div class="stat-label">Total Revenue</div>
-          <div class="stat-value"><%= @agency_stats[:total_revenue] %></div>
+          <div class="stat-value"><%= @dashboard_stats[:total_revenue] %></div>
           <div class="stat-trend trend-up">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
             </svg>
-            <%= @agency_stats[:growth_rate] %> vs last month
+            <%= @dashboard_stats[:growth_rate] %> vs last month
           </div>
         </div>
       </div>
@@ -82,8 +82,8 @@
               </tr>
             </thead>
             <tbody>
-              <% if CreatorProfile.where(organization_id: @organization.id).exists? %>
-                <% CreatorProfile.where(organization_id: @organization.id).limit(5).each do |creator| %>
+              <% if @organization.creator_profiles.exists? %>
+                <% @top_creators.each do |creator| %>
                   <tr class="border-b border-gray-200 hover:bg-gray-50">
                     <td class="py-3 px-4">
                       <div class="flex items-center gap-3">
@@ -174,7 +174,7 @@
           
           <div class="list-item p-4">
             <div class="flex-1">
-              <h3 class="font-medium">Agency Commission</h3>
+              <h3 class="font-medium">Commission</h3>
               <div class="flex items-center gap-2 mt-1">
                 <span class="text-2xl font-bold">$1,265</span>
                 <span class="badge badge-green">+8.7%</span>

@@ -6,8 +6,10 @@ test_org = Organization.find_or_create_by!(
 
 puts "Creating test user..."
 test_user = User.find_or_initialize_by(email: 'test@test.com')
+test_user.name = 'Test User'
 test_user.password = 'lkj3lkj3'
 test_user.password_confirmation = 'lkj3lkj3'
+test_user.organization = test_org
 test_user.skip_confirmation! # Skip email confirmation for the test user
 test_user.save!
 

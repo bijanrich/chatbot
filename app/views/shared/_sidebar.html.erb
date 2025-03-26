@@ -45,7 +45,7 @@
       </div>
       <div class="user-details">
         <div class="user-name"><%= current_user.name || current_user.email.split('@').first %></div>
-        <div class="user-role"><%= current_user.creator? ? 'Creator' : 'Agency' %></div>
+        <div class="user-role"><%= current_user.admin? ? 'Admin' : 'Member' %></div>
       </div>
     </div>
     

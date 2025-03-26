@@ -8,78 +8,26 @@ class Users::RegistrationsController < Devise::RegistrationsController
 
   # POST /resource
   def create
-    # Store user_type before calling super since it's not a User attribute
-    user_type = params[:user_type]
-    
     build_resource(sign_up_params)
     
     if resource.save
-      if user_type.present?
-        begin
-          case user_type
-          when 'creator'
-            # For creators, we create an organization automatically
-            org = Organization.create!(
-              name: "#{resource.name}'s Creator Account",
-              billing_email: resource.email
-            )
-            resource.update(organization: org)
-            
-            # Create a creator profile
-            creator_profile = CreatorProfile.new(
-              organization: org,
-              user: resource,
-              name: resource.name,
-              onlyfans_username: resource.name.parameterize,
-              status: 'active'
-            )
-            
-            unless creator_profile.save
-              # If creator profile fails to save, destroy the user and org
-              org.destroy
-              resource.destroy
-              
-              # Add errors to the resource
-              creator_profile.errors.full_messages.each do |msg|
-                resource.errors.add(:base, msg)
-              end
-              
-              clean_up_passwords resource
-              set_minimum_password_length
-              respond_with resource and return
-            end
-            
-          when 'agency'
-            # For agency owners, we create an agency organization
-            org = Organization.create!(
-              name: "#{resource.name}'s Agency",
-              billing_email: resource.email
-            )
-            resource.update(organization: org)
-          end
-        rescue => e
-          # If anything fails, destroy the user and org if they exist
-          org&.destroy
-          resource.destroy
-          
-          # Add error message
-          resource.errors.add(:base, "Failed to complete registration: #{e.message}")
-          clean_up_passwords resource
-          set_minimum_password_length
-          respond_with resource and return
-        end
+      # Create an organization for every user
+      org = Organization.create!(
+        name: "#{resource.name}'s Organization",
+        billing_email: resource.email
+      )
+      resource.update(organization: org)
+      
+      yield resource if block_given?
+      if resource.active_for_authentication?
+        set_flash_message! :notice, :signed_up
+        sign_up(resource_name, resource)
+        respond_with resource, location: after_sign_up_path_for(resource)
+      else
+        set_flash_message! :notice, :"signed_up_but_#{resource.inactive_message}"
+        expire_data_after_sign_in!
+        respond_with resource, location: after_inactive_sign_up_path_for(resource)
       end
-
-      # Modified to make sure flash persists with Turbo
-      if is_navigational_format?
-        if resource.active_for_authentication?
-          flash[:notice] = I18n.t('devise.registrations.signed_up')
-        else
-          flash[:notice] = I18n.t("devise.registrations.signed_up_but_#{resource.inactive_message}")
-        end
-      end
-
-      respond_with resource, location: after_sign_up_path_for(resource)
     else
       clean_up_passwords resource
       set_minimum_password_length
@@ -87,14 +35,44 @@ class Users::RegistrationsController < Devise::RegistrationsController
     end
   end
 
+  # GET /resource/edit
+  # def edit
+  #   super
+  # end
+
+  # PUT /resource
+  # def update
+  #   super
+  # end
+
+  # DELETE /resource
+  # def destroy
+  #   super
+  # end
+
+  # GET /resource/cancel
+  # Forces the session data which is usually expired after sign
+  # in to be expired now. This is useful if the user wants to
+  # cancel oauth signing in/up in the middle of the process,
+  # removing all OAuth session data.
+  # def cancel
+  #   super
+  # end
+
   protected
 
+  # If you have extra params to permit, append them to the sanitizer.
   def configure_sign_up_params
     devise_parameter_sanitizer.permit(:sign_up, keys: [:name])
   end
 
-  # The path used after sign up
+  # The path used after sign up.
   def after_sign_up_path_for(resource)
-    root_path
+    dashboard_path
   end
+
+  # The path used after sign up for inactive accounts.
+  # def after_inactive_sign_up_path_for(resource)
+  #   super(resource)
+  # end
 end

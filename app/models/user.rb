@@ -5,8 +5,7 @@ class User < ApplicationRecord
          :confirmable, :lockable, :trackable 
          # :timeoutable, and :omniauthable
 
-  belongs_to :organization, optional: true
-  has_one :creator_profile, dependent: :destroy
+  belongs_to :organization
   
   # Payment associations
   has_many :payments, dependent: :destroy
@@ -14,32 +13,17 @@ class User < ApplicationRecord
   validates :email, presence: true, uniqueness: true
   validates :name, presence: true, length: { minimum: 2, maximum: 50 }, allow_blank: true
   
-  # User type helpers
-  def creator?
-    creator_profile.present?
-  end
-  
-  def agency_owner?
-    organization.present? && !creator? && is_admin_of_organization?
-  end
-
-  def agency_member?
-    organization.present? && !creator? && !is_admin_of_organization?
-  end
-  
+  # Organization helpers
   def is_admin_of_organization?
-    organization.present? && organization.users.where(id: id).exists?
+    organization.users.where(id: id).exists?
   end
   
-  def user_type
-    return 'creator' if creator?
-    return 'agency' if agency_owner?
-    return 'agency_member' if agency_member?
-    'user' # default type
+  def admin?
+    is_admin_of_organization?
   end
   
   def owns_organization?(org)
-    self.organization_id == org.id && agency_owner?
+    self.organization_id == org.id && admin?
   end
 
   def member_of?(org)
@@ -48,12 +32,10 @@ class User < ApplicationRecord
   
   # Subscription helpers through organization
   def subscribed?
-    return false unless organization.present?
     organization.subscriptions.active.exists?
   end
   
   def organization_subscription
-    return nil unless organization.present?
     organization.subscriptions.active.first
   end
   

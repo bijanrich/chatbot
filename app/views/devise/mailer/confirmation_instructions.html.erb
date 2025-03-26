@@ -93,21 +93,12 @@
 
         <p>With your FanPilot account, you'll be able to:</p>
         <ul>
-          <% if @resource.respond_to?(:creator?) && @resource.creator? %>
-            <li>Manage your content creation</li>
-            <li>Connect with your audience</li>
-            <li>Track your performance</li>
-            <li>And much more!</li>
-          <% elsif @resource.respond_to?(:agency_owner?) && @resource.agency_owner? %>
-            <li>Manage your creators</li>
-            <li>Track performance metrics</li>
-            <li>Access advanced analytics</li>
-            <li>And much more!</li>
-          <% else %>
-            <li>Access platform features</li>
-            <li>Connect with creators</li>
-            <li>Track your activity</li>
-            <li>And much more!</li>
+          <% if @resource.respond_to?(:admin?) %>
+            <% if @resource.admin? %>
+              <li>Manage your organization settings and add team members</li>
+            <% else %>
+              <li>Access your organization's resources</li>
+            <% end %>
           <% end %>
         </ul>
 

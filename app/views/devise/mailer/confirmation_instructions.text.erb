@@ -1,32 +1,28 @@
-Welcome to FanPilot!
+Welcome to FanPilot, <%= @resource.name %>!
 
-Hi <%= @email %>,
-
-Thank you for joining FanPilot! We're excited to have you on board. To get started, please confirm your email address by visiting this URL:
+You can confirm your account email through the link below:
 
 <%= confirmation_url(@resource, confirmation_token: @token) %>
 
 With your FanPilot account, you'll be able to:
-<% if @resource.creator? %>
-* Manage your content creation
-* Connect with your audience
-* Track your performance
-* And much more!
-<% elsif @resource.agency_owner? %>
-* Manage your creators
+
+<% if @resource.respond_to?(:admin?) %>
+  <% if @resource.admin? %>
+* Manage your organization settings and add team members
 * Track performance metrics
 * Access advanced analytics
 * And much more!
-<% else %>
-* Access platform features
-* Connect with creators
+  <% else %>
+* Access your organization's resources
+* Connect with your team
 * Track your activity
 * And much more!
+  <% end %>
 <% end %>
 
-If you have any questions, feel free to reach out to our support team.
+If you have any questions, please contact our support team.
 
-Best regards,
+Thanks,
 The FanPilot Team
 
 © <%= Time.current.year %> FanPilot. All rights reserved. 
