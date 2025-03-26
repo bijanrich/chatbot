@@ -1,17 +1,40 @@
 class Subscription < ApplicationRecord
   belongs_to :organization
 
-  STATUSES = %w[active trialing past_due canceled unpaid].freeze
-  PLAN_NAMES = %w[starter professional enterprise].freeze
-
-  validates :status, presence: true, inclusion: { in: STATUSES }
-  validates :plan_name, presence: true, inclusion: { in: PLAN_NAMES }
+  validates :plan_name, presence: true
+  validates :status, presence: true
   validates :stripe_subscription_id, presence: true, uniqueness: true
-  validates :organization_id, uniqueness: true
 
+  # Status constants
+  STATUSES = %w[active past_due canceled incomplete incomplete_expired trialing unpaid].freeze
+
+  # Scopes
   scope :active, -> { where(status: 'active') }
   scope :trialing, -> { where(status: 'trialing') }
-  scope :past_due, -> { where(status: 'past_due') }
   scope :canceled, -> { where(status: 'canceled') }
-  scope :unpaid, -> { where(status: 'unpaid') }
+
+  # Check if subscription is active
+  def active?
+    status == 'active' || status == 'trialing'
+  end
+
+  # Check if subscription is canceled
+  def canceled?
+    status == 'canceled'
+  end
+
+  # Check if subscription is about to expire
+  def about_to_expire?
+    active? && updated_at.present? && updated_at < 7.days.ago
+  end
+
+  # Cancel the subscription
+  def cancel!
+    update(status: 'canceled')
+  end
+
+  # Return the plan associated with this subscription
+  def plan
+    Plan.find_by(name: plan_name)
+  end
 end

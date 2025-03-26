@@ -1,6 +1,10 @@
 require 'sidekiq/web'
 
 Rails.application.routes.draw do
+  get 'subscriptions/index'
+  get 'subscriptions/new'
+  get 'subscriptions/checkout'
+  get 'subscriptions/success'
   # Authenticated routes
   authenticated :user do
     root 'dashboard#index', as: :authenticated_root
@@ -11,7 +15,12 @@ Rails.application.routes.draw do
   root 'home#index'
   
   get 'home/index'
-  devise_for :users
+  
+  # Use custom controller for registrations
+  devise_for :users, controllers: {
+    registrations: 'users/registrations'
+  }
+  
   # Mount Sidekiq web UI
   mount Sidekiq::Web => '/sidekiq' if Rails.env.development?
 

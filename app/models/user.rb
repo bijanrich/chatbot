@@ -5,36 +5,49 @@ class User < ApplicationRecord
          :confirmable, :lockable, :trackable 
          # :timeoutable, and :omniauthable
 
-  has_many :memberships, dependent: :destroy
-  has_many :organizations, through: :memberships
+  belongs_to :organization, optional: true
   has_one :creator_profile, dependent: :destroy
+  
+  # Payment associations
+  has_many :payments, dependent: :destroy
 
   validates :email, presence: true, uniqueness: true
   
-  # User role helpers
-  def agency_user?
-    memberships.exists?(role: ['admin', 'owner'])
-  end
-  
+  # User type helpers
   def creator?
     creator_profile.present?
   end
   
-  def role
-    return 'agency' if agency_user?
-    return 'creator' if creator?
-    'user' # default role
+  def agency_owner?
+    organization.present? && organization.users.where(id: id).exists? && !creator?
   end
   
-  def admin_of?(organization)
-    memberships.exists?(organization: organization, role: 'admin')
+  def user_type
+    return 'creator' if creator?
+    return 'agency' if agency_owner?
+    'user' # default type
   end
-
-  def owner_of?(organization)
-    memberships.exists?(organization: organization, role: 'owner')
+  
+  def owns_organization?(organization)
+    self.organization_id == organization.id && agency_owner?
   end
 
   def member_of?(organization)
-    memberships.exists?(organization: organization)
+    self.organization_id == organization.id
+  end
+  
+  # Subscription helpers through organization
+  def subscribed?
+    return false unless organization.present?
+    organization.subscriptions.active.exists?
+  end
+  
+  def organization_subscription
+    return nil unless organization.present?
+    organization.subscriptions.active.first
+  end
+  
+  def subscription_plan_name
+    organization_subscription&.plan_name
   end
 end

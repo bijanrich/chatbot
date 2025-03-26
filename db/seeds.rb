@@ -13,3 +13,13 @@ Dir[Rails.root.join('db', 'seeds', '*.rb')].sort.each do |file|
   puts "Loading seed file: #{file}"
   load file
 end
+
+# Load subscription plans
+require_relative 'seeds/plans'
+
+# After creating plans, sync them with Stripe if in production
+if Rails.env.production?
+  puts "Syncing plans with Stripe..."
+  StripeService.sync_plans
+  puts "Plans synced with Stripe."
+end

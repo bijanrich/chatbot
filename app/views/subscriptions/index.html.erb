@@ -1,0 +1,76 @@
+<div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+  <div class="text-center mb-12">
+    <h1 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+      FanPilot Agency Subscription Plans
+    </h1>
+    <p class="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
+      Choose the right plan for your agency's content creators
+    </p>
+  </div>
+
+  <% if @active_subscription.present? %>
+    <div class="max-w-md mx-auto mb-10 bg-blue-50 rounded-lg p-4 border border-blue-200">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <svg class="h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-blue-800">
+            You are currently subscribed to the <%= @active_subscription.plan_name.titleize %> plan
+          </h3>
+          <div class="mt-2 text-sm text-blue-700">
+            <p>Status: <%= @active_subscription.status.capitalize %></p>
+          </div>
+          <div class="mt-3">
+            <%= link_to "Cancel Subscription", subscriptions_cancel_path(id: @active_subscription.id), 
+                method: :post, 
+                data: { confirm: "Are you sure you want to cancel your subscription?" },
+                class: "inline-flex items-center px-3 py-1.5 border border-red-600 text-xs font-medium rounded-md text-red-600 bg-white hover:bg-red-50" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="mt-10 space-y-12 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-8">
+    <% @plans.each do |plan| %>
+      <div class="relative p-8 bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col">
+        <div class="flex-1">
+          <h3 class="text-xl font-semibold text-gray-900"><%= plan.name.titleize %></h3>
+          <% if @active_subscription&.plan_name == plan.name %>
+            <p class="absolute top-0 transform -translate-y-1/2 bg-blue-500 text-white px-3 py-0.5 rounded-full text-sm font-semibold">
+              Current Plan
+            </p>
+          <% end %>
+          <p class="mt-4 flex items-baseline text-gray-900">
+            <span class="text-5xl font-extrabold tracking-tight">$<%= plan.amount.to_i %></span>
+            <span class="ml-1 text-xl font-semibold">/<%= plan.interval %></span>
+          </p>
+          <p class="mt-6 text-gray-500"><%= plan.description %></p>
+
+          <!-- Feature List -->
+          <ul role="list" class="mt-6 space-y-4">
+            <% plan.features_list.each do |feature| %>
+              <li class="flex">
+                <svg class="flex-shrink-0 h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span class="ml-3 text-gray-500"><%= feature %></span>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+
+        <% if @active_subscription&.plan_name == plan.name %>
+          <button disabled class="bg-gray-300 text-gray-600 mt-8 block w-full py-3 px-6 border border-transparent rounded-md text-center font-medium">
+            Current Plan
+          </button>
+        <% else %>
+          <%= link_to "Subscribe Now", subscriptions_new_path(plan_id: plan.id), class: "bg-blue-600 text-white hover:bg-blue-700 mt-8 block w-full py-3 px-6 border border-transparent rounded-md text-center font-medium" %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

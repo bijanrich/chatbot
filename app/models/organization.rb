@@ -1,6 +1,5 @@
 class Organization < ApplicationRecord
-  has_many :memberships, dependent: :destroy
-  has_many :users, through: :memberships
+  has_many :users, dependent: :nullify
   has_many :creator_profiles, dependent: :destroy
   has_many :subscriptions, dependent: :destroy
 

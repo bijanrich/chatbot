@@ -1,0 +1,27 @@
+<div class="max-w-xl mx-auto py-12 px-4 sm:px-6 lg:px-8 text-center">
+  <div class="mb-6">
+    <svg class="animate-spin mx-auto h-12 w-12 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+  </div>
+  
+  <h2 class="text-2xl font-bold text-gray-900">Redirecting to Secure Checkout</h2>
+  <p class="mt-2 text-gray-600">You are being redirected to our secure payment provider to complete your subscription.</p>
+
+  <div class="mt-8">
+    <p class="text-sm text-gray-500">If you are not redirected automatically, please click the button below.</p>
+    <a href="<%= @session.url %>" class="mt-4 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+      Proceed to Checkout
+    </a>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // Redirect to Stripe Checkout after a short delay
+    setTimeout(function() {
+      window.location.href = "<%= @session.url %>";
+    }, 1500);
+  });
+</script>

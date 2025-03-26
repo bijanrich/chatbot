@@ -42,6 +42,12 @@ gem 'telegram-bot-ruby'
 # Load environment variables from .env file
 gem 'dotenv-rails'
 
+# Resend email service
+gem 'resend', '~> 0.7.0'
+
+# Payment processing
+gem 'stripe', '~> 9.4'
+
 # Use pgvector for vector similarity search
 
 group :development, :test do

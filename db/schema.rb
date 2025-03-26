@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_03_25_223009) do
+ActiveRecord::Schema[7.1].define(version: 2025_03_25_233334) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "vector"
@@ -56,16 +56,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_25_223009) do
     t.index ["user_id"], name: "index_creator_profiles_on_user_id"
   end
 
-  create_table "memberships", force: :cascade do |t|
-    t.bigint "user_id", null: false
-    t.bigint "organization_id", null: false
-    t.string "role"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["organization_id"], name: "index_memberships_on_organization_id"
-    t.index ["user_id"], name: "index_memberships_on_user_id"
-  end
-
 # Could not dump table "memory_facts" because of following StandardError
 #   Unknown type 'vector(384)' for column 'embedding'
 
@@ -92,6 +82,17 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_25_223009) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "payments", force: :cascade do |t|
+    t.decimal "amount"
+    t.string "status"
+    t.string "stripe_payment_id"
+    t.string "payment_method"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_payments_on_user_id"
+  end
+
   create_table "personas", force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
@@ -105,6 +106,17 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_25_223009) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_personas_on_name", unique: true
+  end
+
+  create_table "plans", force: :cascade do |t|
+    t.string "name"
+    t.string "stripe_price_id"
+    t.decimal "amount"
+    t.string "interval"
+    t.text "description"
+    t.text "features"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "psychological_analyses", force: :cascade do |t|
@@ -160,6 +172,17 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_25_223009) do
     t.index ["responded"], name: "index_telegram_messages_on_responded"
   end
 
+  create_table "user_subscriptions", force: :cascade do |t|
+    t.string "plan_name"
+    t.string "status"
+    t.string "stripe_subscription_id"
+    t.datetime "current_period_end"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_user_subscriptions_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -185,7 +208,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_25_223009) do
     t.string "provider"
     t.string "uid"
     t.string "name"
+    t.string "role"
+    t.bigint "organization_id"
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["organization_id"], name: "index_users_on_organization_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
@@ -194,12 +220,13 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_25_223009) do
   add_foreign_key "conversation_summaries", "chats"
   add_foreign_key "creator_profiles", "organizations"
   add_foreign_key "creator_profiles", "users"
-  add_foreign_key "memberships", "organizations"
-  add_foreign_key "memberships", "users"
   add_foreign_key "memory_facts", "chats"
   add_foreign_key "memory_facts", "messages"
   add_foreign_key "messages", "chats"
+  add_foreign_key "payments", "users"
   add_foreign_key "psychological_analyses", "chats"
   add_foreign_key "relationship_states", "chats"
   add_foreign_key "subscriptions", "organizations"
+  add_foreign_key "user_subscriptions", "users"
+  add_foreign_key "users", "organizations"
 end
