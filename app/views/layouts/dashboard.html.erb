@@ -15,10 +15,9 @@
   </head>
 
   <body class="bg-gray-100 dashboard-layout" data-turbo-suppress-warning>
-    <%= render 'layouts/dashboard/navigation' %>
+    <%= render 'shared/sidebar' %>
     
     <div class="dashboard-content">
-      <%= render 'shared/subscription_banner' %>
       <%= render 'shared/flash_messages' if flash.any? %>
       
       <main class="dashboard-main">
