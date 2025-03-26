@@ -5,13 +5,6 @@ class DashboardController < ApplicationController
   
   def index
     # All users have an organization and use the same dashboard
-    dashboard
-  end
-  
-  private
-
-  def dashboard
-    # Fetch data needed for dashboard
     @organization = current_user.organization
     
     # Calculate basic statistics
@@ -34,7 +27,5 @@ class DashboardController < ApplicationController
     
     # Get the top 5 creators by recent activity
     @top_creators = @organization.creator_profiles.order(updated_at: :desc).limit(5)
-    
-    render :dashboard
   end
 end
