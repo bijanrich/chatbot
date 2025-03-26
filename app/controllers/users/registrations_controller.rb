@@ -70,11 +70,12 @@ class Users::RegistrationsController < Devise::RegistrationsController
         end
       end
 
+      # Modified to make sure flash persists with Turbo
       if is_navigational_format?
         if resource.active_for_authentication?
-          set_flash_message! :notice, :signed_up
+          flash[:notice] = I18n.t('devise.registrations.signed_up')
         else
-          set_flash_message! :notice, :"signed_up_but_#{resource.inactive_message}"
+          flash[:notice] = I18n.t("devise.registrations.signed_up_but_#{resource.inactive_message}")
         end
       end
 

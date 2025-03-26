@@ -32,7 +32,7 @@
             position: fixed;
             width: 100%;
             top: 0;
-            z-index: 100;
+            z-index: 99;
         }
 
         .header-content {
@@ -428,5 +428,9 @@
 <footer>
     <div class="container">
         <p>© 2024 FanPilot. All rights reserved.</p>
+        <div class="mt-4 text-center">
+            <a href="/?test_flash=This+is+a+test+flash+message" class="btn btn-secondary">Test Flash Notice</a>
+            <a href="/?test_flash=This+is+an+error+message&flash_type=alert" class="btn btn-secondary">Test Flash Alert</a>
+        </div>
     </div>
 </footer> 

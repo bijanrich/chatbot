@@ -77,10 +77,10 @@ a {
 /* Flash Messages */
 .flash-message {
   position: fixed;
-  top: 1rem;
+  top: 4.5rem;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 50;
+  z-index: 9999;
   min-width: 300px;
   max-width: 90%;
   margin-bottom: 1rem;
