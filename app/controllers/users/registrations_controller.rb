@@ -15,31 +15,58 @@ class Users::RegistrationsController < Devise::RegistrationsController
     
     if resource.save
       if user_type.present?
-        case user_type
-        when 'creator'
-          # For creators, we create an organization automatically
-          org = Organization.create!(
-            name: "#{resource.name}'s Creator Account",
-            billing_email: resource.email
-          )
-          resource.update(organization: org)
+        begin
+          case user_type
+          when 'creator'
+            # For creators, we create an organization automatically
+            org = Organization.create!(
+              name: "#{resource.name}'s Creator Account",
+              billing_email: resource.email
+            )
+            resource.update(organization: org)
+            
+            # Create a creator profile
+            creator_profile = CreatorProfile.new(
+              organization: org,
+              user: resource,
+              name: resource.name,
+              onlyfans_username: resource.name.parameterize,
+              status: 'active'
+            )
+            
+            unless creator_profile.save
+              # If creator profile fails to save, destroy the user and org
+              org.destroy
+              resource.destroy
+              
+              # Add errors to the resource
+              creator_profile.errors.full_messages.each do |msg|
+                resource.errors.add(:base, msg)
+              end
+              
+              clean_up_passwords resource
+              set_minimum_password_length
+              respond_with resource and return
+            end
+            
+          when 'agency'
+            # For agency owners, we create an agency organization
+            org = Organization.create!(
+              name: "#{resource.name}'s Agency",
+              billing_email: resource.email
+            )
+            resource.update(organization: org)
+          end
+        rescue => e
+          # If anything fails, destroy the user and org if they exist
+          org&.destroy
+          resource.destroy
           
-          # Create a creator profile
-          CreatorProfile.create!(
-            organization: org,
-            user: resource,
-            name: resource.name,
-            onlyfans_username: resource.name.parameterize,
-            status: 'active'
-          )
-          
-        when 'agency'
-          # For agency owners, we create an agency organization
-          org = Organization.create!(
-            name: "#{resource.name}'s Agency",
-            billing_email: resource.email
-          )
-          resource.update(organization: org)
+          # Add error message
+          resource.errors.add(:base, "Failed to complete registration: #{e.message}")
+          clean_up_passwords resource
+          set_minimum_password_length
+          respond_with resource and return
         end
       end
 
