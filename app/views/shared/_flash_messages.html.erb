@@ -1,3 +1,90 @@
+<style>
+  .flash-message {
+    position: fixed;
+    top: 3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    min-width: 400px;
+    max-width: 800px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    animation: slideDown 0.5s ease-out;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .flash-message.notice {
+    border-left: 6px solid #10B981;
+    background-color: #ECFDF5;
+  }
+
+  .flash-message.alert {
+    border-left: 6px solid #EF4444;
+    background-color: #FEF2F2;
+  }
+
+  .flash-content {
+    display: flex;
+    align-items: center;
+    padding: 1.25rem;
+    gap: 1rem;
+  }
+
+  .flash-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .flash-message.notice .flash-icon {
+    color: #10B981;
+  }
+
+  .flash-message.alert .flash-icon {
+    color: #EF4444;
+  }
+
+  .flash-close {
+    margin-left: auto;
+    padding: 0.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #6B7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .flash-close svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .flash-close:hover {
+    color: #374151;
+  }
+
+  @keyframes slideDown {
+    from {
+      transform: translate(-50%, -200%);
+      opacity: 0;
+    }
+    to {
+      transform: translate(-50%, 0);
+      opacity: 1;
+    }
+  }
+
+  .flash-message.opacity-0 {
+    opacity: 0;
+    transition: opacity 0.5s ease-out;
+  }
+</style>
+
 <% flash.each do |type, message| %>
   <div class="flash-message <%= type %>" role="alert" data-controller="flash">
     <div class="flash-content">

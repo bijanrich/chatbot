@@ -172,17 +172,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_26_030231) do
     t.index ["responded"], name: "index_telegram_messages_on_responded"
   end
 
-  create_table "user_subscriptions", force: :cascade do |t|
-    t.string "plan_name"
-    t.string "status"
-    t.string "stripe_subscription_id"
-    t.datetime "current_period_end"
-    t.bigint "user_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_user_subscriptions_on_user_id"
-  end
-
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -227,6 +216,5 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_26_030231) do
   add_foreign_key "psychological_analyses", "chats"
   add_foreign_key "relationship_states", "chats"
   add_foreign_key "subscriptions", "organizations"
-  add_foreign_key "user_subscriptions", "users"
   add_foreign_key "users", "organizations"
 end
