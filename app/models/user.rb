@@ -12,6 +12,7 @@ class User < ApplicationRecord
   has_many :payments, dependent: :destroy
 
   validates :email, presence: true, uniqueness: true
+  validates :name, presence: true, length: { minimum: 2, maximum: 50 }, allow_blank: true
   
   # User type helpers
   def creator?

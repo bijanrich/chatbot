@@ -9,6 +9,10 @@ Rails.application.routes.draw do
   authenticated :user do
     root 'dashboard#index', as: :authenticated_root
     get 'dashboard', to: 'dashboard#index', as: :dashboard
+    
+    # Settings routes
+    get 'settings', to: 'settings#edit', as: :edit_settings
+    patch 'settings', to: 'settings#update', as: :settings
   end
   
   # Set the root path to the home index page for non-authenticated users
