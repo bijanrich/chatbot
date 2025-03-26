@@ -80,6 +80,9 @@ Rails.application.configure do
   config.hosts << "*.ngrok-free.app"
 
   config.hosts << "bfd1-2806-102e-3-4da1-a000-d46c-ec27-a987.ngrok-free.app"
+  config.host_authorization = { exclude: ->(request) { 
+    request.host.end_with?('fanpilot.app') || request.host == 'fanpilot.app'
+  }}
 
   # Configure mailer
   config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
