@@ -7,7 +7,7 @@ namespace :email do
     class TestMailer < ActionMailer::Base
       def test_email
         mail(
-          to: "bijan.pourriahi@gmail.com  ",
+          to: "bijan.pourriahi@gmail.com",
           from: "support@fanpilot.app",
           subject: "Test Email from FanPilot",
           body: "This is a test email from FanPilot. If you can see this, email sending is working correctly."
@@ -15,15 +15,24 @@ namespace :email do
       end
     end
     
-    # Display current email settings
-    puts "Current ActionMailer settings:"
-    puts "delivery_method: #{ActionMailer::Base.delivery_method}"
-    puts "smtp_settings: #{ActionMailer::Base.smtp_settings.inspect}"
-    puts "perform_deliveries: #{ActionMailer::Base.perform_deliveries}"
-    puts "raise_delivery_errors: #{ActionMailer::Base.raise_delivery_errors}"
+    # Store original delivery method
+    original_delivery_method = ActionMailer::Base.delivery_method
     
-    # Send test email
     begin
+      # Force SMTP in development
+      if Rails.env.development?
+        puts "Setting delivery method to SMTP for development..."
+        ActionMailer::Base.delivery_method = :smtp
+      end
+      
+      # Display current email settings
+      puts "Current ActionMailer settings:"
+      puts "delivery_method: #{ActionMailer::Base.delivery_method}"
+      puts "smtp_settings: #{ActionMailer::Base.smtp_settings.inspect}"
+      puts "perform_deliveries: #{ActionMailer::Base.perform_deliveries}"
+      puts "raise_delivery_errors: #{ActionMailer::Base.raise_delivery_errors}"
+      
+      # Send test email
       email = TestMailer.test_email
       result = email.deliver_now
       puts "Email sent successfully!"
@@ -35,6 +44,12 @@ namespace :email do
     rescue => e
       puts "Error sending email: #{e.message}"
       puts e.backtrace.join("\n")
+    ensure
+      # Reset delivery method if we changed it
+      if Rails.env.development? && original_delivery_method != :smtp
+        puts "Resetting delivery method back to #{original_delivery_method}"
+        ActionMailer::Base.delivery_method = original_delivery_method
+      end
     end
   end
 
