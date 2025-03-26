@@ -89,8 +89,10 @@ Rails.application.configure do
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
-  # Configure mailer
-  config.action_mailer.default_url_options = { host: ENV['APPLICATION_HOST'] }
+  # Configure host for URL generation
+  config.action_mailer.default_url_options = { host: 'fanpilot.app', protocol: 'https' }
+  
+  # Configure mailer to use Resend
   config.action_mailer.delivery_method = :resend
   config.action_mailer.resend_settings = {
     api_key: ENV['RESEND_API_KEY']
