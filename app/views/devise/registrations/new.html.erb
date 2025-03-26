@@ -1,9 +1,9 @@
 <div class="auth-container">
-  <div class="auth-form-container">
-    <div class="auth-header">
-      <h1>Sign up</h1>
-      <p>Create your account to get started</p>
-    </div>
+  <div class="auth-card">
+    <h1 class="logo-text">FanPilot</h1>
+    
+    <h2 class="auth-title">Sign up</h2>
+    <p class="auth-subtitle">Create your account to get started</p>
 
     <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "auth-form" }) do |f| %>
       <% if resource.errors.any? %>
@@ -21,22 +21,22 @@
 
       <div class="form-group">
         <%= f.label :name, class: "form-label" %>
-        <%= f.text_field :name, class: "form-control", placeholder: "Your full name", required: true %>
+        <%= f.text_field :name, class: "form-input", placeholder: "Your full name", required: true %>
       </div>
 
       <div class="form-group">
         <%= f.label :email, class: "form-label" %>
-        <%= f.email_field :email, class: "form-control", placeholder: "Your email address", required: true %>
+        <%= f.email_field :email, class: "form-input", placeholder: "Your email address", required: true %>
       </div>
 
       <div class="form-group">
         <%= f.label :password, class: "form-label" %>
-        <%= f.password_field :password, class: "form-control", placeholder: "Create a password (8+ characters)", required: true %>
+        <%= f.password_field :password, class: "form-input", placeholder: "Create a password (8+ characters)", required: true %>
       </div>
 
       <div class="form-group">
         <%= f.label :password_confirmation, "Confirm password", class: "form-label" %>
-        <%= f.password_field :password_confirmation, class: "form-control", placeholder: "Confirm your password", required: true %>
+        <%= f.password_field :password_confirmation, class: "form-input", placeholder: "Confirm your password", required: true %>
       </div>
 
       <%= f.submit "Sign up", class: "auth-button" %>
