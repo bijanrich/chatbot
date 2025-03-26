@@ -9,28 +9,44 @@
         color: #333;
         margin: 0;
         padding: 0;
+        background-color: #f9fafb;
       }
       .container {
         max-width: 600px;
         margin: 0 auto;
         padding: 20px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
       }
       .header {
         text-align: center;
         padding: 20px 0;
         border-bottom: 1px solid #eee;
       }
+      .header h1 {
+        color: #4F46E5;
+        margin: 0;
+      }
       .content {
         padding: 30px 0;
+      }
+      .button-container {
+        text-align: center;
+        margin: 30px 0;
       }
       .button {
         display: inline-block;
         padding: 12px 24px;
         background-color: #4F46E5;
-        color: white;
+        color: white !important;
         text-decoration: none;
         border-radius: 6px;
-        margin: 20px 0;
+        font-weight: 500;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .button:hover {
+        background-color: #4338ca;
       }
       .footer {
         text-align: center;
@@ -39,30 +55,50 @@
         font-size: 14px;
         border-top: 1px solid #eee;
       }
+      ul {
+        padding-left: 20px;
+      }
+      li {
+        margin-bottom: 8px;
+      }
+      p {
+        margin-bottom: 16px;
+      }
+      .link-fallback {
+        margin-top: 15px;
+        font-size: 13px;
+        color: #666;
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header">
-        <h1>Welcome to FanPilot</h1>
+        <h1>Welcome to FanPilot!</h1>
       </div>
+      
       <div class="content">
         <p>Hi <%= @email %>,</p>
         
         <p>Thank you for joining FanPilot! We're excited to have you on board. To get started, please confirm your email address by clicking the button below:</p>
         
-        <div style="text-align: center;">
-          <%= link_to 'Confirm my account', confirmation_url(@resource, confirmation_token: @token), class: 'button', style: 'color: white;' %>
+        <div class="button-container">
+          <a href="<%= confirmation_url(@resource, confirmation_token: @token) %>" class="button">Confirm my account</a>
+        </div>
+
+        <div class="link-fallback">
+          If the button above doesn't work, copy and paste this link into your browser:<br>
+          <a href="<%= confirmation_url(@resource, confirmation_token: @token) %>"><%= confirmation_url(@resource, confirmation_token: @token) %></a>
         </div>
 
         <p>With your FanPilot account, you'll be able to:</p>
         <ul>
-          <% if @resource.creator? %>
+          <% if @resource.respond_to?(:creator?) && @resource.creator? %>
             <li>Manage your content creation</li>
             <li>Connect with your audience</li>
             <li>Track your performance</li>
             <li>And much more!</li>
-          <% elsif @resource.agency_owner? %>
+          <% elsif @resource.respond_to?(:agency_owner?) && @resource.agency_owner? %>
             <li>Manage your creators</li>
             <li>Track performance metrics</li>
             <li>Access advanced analytics</li>
@@ -76,6 +112,8 @@
         </ul>
 
         <p>If you have any questions, feel free to reach out to our support team.</p>
+        
+        <p>Best regards,<br>The FanPilot Team</p>
       </div>
       
       <div class="footer">

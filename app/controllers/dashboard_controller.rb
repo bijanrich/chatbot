@@ -3,10 +3,13 @@ class DashboardController < ApplicationController
   layout 'dashboard'
   
   def index
+    # Prioritize creator profile over agency if both exist for the user
     if current_user.creator?
       creator_dashboard
-    elsif current_user.organization.present?
+    elsif current_user.agency_owner?
       agency_dashboard
+    elsif current_user.agency_member?
+      agency_member_dashboard
     else
       # Regular user - should be redirected to create one of these profiles
       redirect_to root_path, notice: "Please complete your registration" 
@@ -45,9 +48,19 @@ class DashboardController < ApplicationController
     render :agency_dashboard
   end
   
+  def agency_member_dashboard
+    # For now, just show the same view as agency owners
+    # with potential restrictions applied at the view level
+    agency_dashboard
+  end
+  
   def creator_dashboard
     # Fetch data needed for creator dashboard
     @creator_profile = current_user.creator_profile
+    
+    # Make sure we're not showing agency banners or conflicting elements
+    @hide_agency_content = true
+    
     render :creator_dashboard
   end
 end

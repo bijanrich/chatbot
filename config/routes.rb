@@ -16,9 +16,10 @@ Rails.application.routes.draw do
   
   get 'home/index'
   
-  # Use custom controller for registrations
+  # Use custom controllers for Devise
   devise_for :users, controllers: {
-    registrations: 'users/registrations'
+    registrations: 'users/registrations',
+    confirmations: 'users/confirmations'
   }
   
   # Mount Sidekiq web UI

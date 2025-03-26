@@ -7,8 +7,8 @@ namespace :email do
     class TestMailer < ActionMailer::Base
       def test_email
         mail(
-          to: "test@example.com",
-          from: "test@fanpilot.app",
+          to: "bijan.pourriahi@gmail.com  ",
+          from: "support@fanpilot.app",
           subject: "Test Email from FanPilot",
           body: "This is a test email from FanPilot. If you can see this, email sending is working correctly."
         )
