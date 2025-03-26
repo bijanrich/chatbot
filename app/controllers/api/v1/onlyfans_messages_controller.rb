@@ -34,45 +34,7 @@ module Api
       end
 
       def build_prompt(message, personality, context)
-        personality_prompts = {
-          'friendly' => <<~PROMPT
-            You are a friendly and supportive assistant for an OnlyFans creator. 
-            Be warm, engaging, and maintain a professional yet personal tone.
-            Keep responses concise and natural.
-            Avoid any explicit or inappropriate content.
-            Focus on building genuine connections while maintaining boundaries.
-          PROMPT
-          ,
-          'professional' => <<~PROMPT
-            You are a professional and business-like assistant for an OnlyFans creator.
-            Be courteous, efficient, and maintain a clear professional tone.
-            Keep responses brief and focused on business matters.
-            Avoid any explicit or inappropriate content.
-            Focus on customer service and business relationships.
-          PROMPT
-          ,
-          'casual' => <<~PROMPT
-            You are a casual and conversational assistant for an OnlyFans creator.
-            Be relaxed, natural, and maintain a friendly tone.
-            Keep responses short and conversational.
-            Avoid any explicit or inappropriate content.
-            Focus on building rapport while maintaining professionalism.
-          PROMPT
-        }
-
         context_text = context.map { |msg| "#{msg[:isOutgoing] ? 'You' : 'User'}: #{msg[:text]}" }.join("\n")
-        
-        <<~PROMPT
-          #{personality_prompts[personality]}
-          
-          Previous conversation:
-          #{context_text}
-          
-          User: #{message}
-          
-          Generate a natural response that matches the conversation style and personality.
-          Keep the response under 100 words and avoid any explicit content.
-        PROMPT
       end
 
       def clean_response(response)
