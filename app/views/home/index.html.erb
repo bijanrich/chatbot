@@ -1,441 +1,432 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chat Assistant for Creators</title>
-    <%= csrf_meta_tags %>
-    <%= csp_meta_tag %>
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
-    <%= content_for :styles do %>
-        <style>
-            :root {
-                --primary: #6366F1;
-                --secondary: #4F46E5;
-                --dark: #111827;
-                --light: #F9FAFB;
-            }
-            
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            }
-            
-            body {
-                background-color: var(--light);
-                color: var(--dark);
-                line-height: 1.6;
-            }
-            
-            .container {
-                max-width: 1200px;
-                margin: 0 auto;
-                padding: 0 20px;
-            }
-            
-            header {
-                background-color: white;
-                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-                position: fixed;
-                width: 100%;
-                top: 0;
-                z-index: 100;
-            }
+<% content_for :styles do %>
+    <style>
+        :root {
+            --primary: #6366F1;
+            --secondary: #4F46E5;
+            --dark: #111827;
+            --light: #F9FAFB;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+        }
 
-            .header-content {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 1rem 2rem;
-                max-width: 1200px;
-                margin: 0 auto;
-            }
-            
-            .logo {
-                font-size: 1.5rem;
-                font-weight: 700;
-                color: var(--dark);
-                text-decoration: none;
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-            }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-            .logo::after {
-                content: "🚀";
-                font-size: 1.25rem;
-            }
-            
-            .nav-links {
-                display: flex;
-                align-items: center;
-                gap: 2rem;
-            }
-            
-            .nav-links a {
-                text-decoration: none;
-                color: var(--dark);
-                font-weight: 500;
-                transition: color 0.2s;
-            }
+        .logo::after {
+            content: "🚀";
+            font-size: 1.25rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            transition: color 0.2s;
+        }
 
-            .nav-links a:hover {
-                color: var(--primary);
-            }
-            
-            .btn {
-                display: inline-block;
-                background: var(--primary);
-                color: white;
-                padding: 0.75rem 1.5rem;
-                border-radius: 6px;
-                text-decoration: none;
-                font-weight: 500;
-                transition: all 0.2s;
-                border: none;
-                cursor: pointer;
-            }
-            
-            .btn:hover {
-                background: var(--secondary);
-                transform: translateY(-1px);
-            }
-            
-            .hero {
-                padding: 8rem 0 4rem;
-                text-align: center;
-                background-color: white;
-            }
-            
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background: var(--secondary);
+            transform: translateY(-1px);
+        }
+        
+        .hero {
+            padding: 8rem 0 4rem;
+            text-align: center;
+            background-color: white;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+            line-height: 1.2;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            color: #4B5563;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 1px solid #E5E7EB;
+        }
+
+        .btn-secondary:hover {
+            background: var(--light);
+            border-color: var(--primary);
+        }
+        
+        .features {
+            padding: 80px 0;
+            background-color: white;
+        }
+        
+        .features h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: var(--dark);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .feature-card {
+            text-align: center;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            background: white;
+            transition: transform 0.2s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card h3 {
+            margin: 20px 0;
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+        
+        .feature-card p {
+            color: #4B5563;
+        }
+        
+        .pricing {
+            padding: 80px 0;
+        }
+        
+        .pricing h2 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .pricing-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .pricing-card h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .price {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 20px 0;
+        }
+        
+        .pricing-card ul {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .pricing-card li {
+            padding: 5px 0;
+        }
+        
+        .testimonials {
+            padding: 80px 0;
+            background-color: white;
+        }
+        
+        .testimonials h2 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+        
+        .testimonial-card {
+            background-color: var(--light);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .testimonial-card p {
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+        
+        .testimonial-author {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .cta {
+            background-color: var(--primary);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+        }
+        
+        .cta h2 {
+            margin-bottom: 20px;
+        }
+        
+        .cta .btn {
+            background-color: white;
+            color: var(--primary);
+            margin-top: 30px;
+        }
+        
+        .cta .btn:hover {
+            background-color: var(--light);
+        }
+        
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
             .hero h1 {
-                font-size: 3rem;
-                margin-bottom: 1.5rem;
-                color: var(--dark);
-                line-height: 1.2;
-            }
-
-            .hero h1 span {
-                background: linear-gradient(90deg, var(--primary), var(--secondary));
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
+                font-size: 2rem;
             }
             
             .hero p {
-                font-size: 1.25rem;
-                max-width: 600px;
-                margin: 0 auto 2rem;
-                color: #4B5563;
+                font-size: 1rem;
             }
-
+            
             .hero-buttons {
-                display: flex;
-                gap: 1rem;
-                justify-content: center;
+                flex-direction: column;
+                align-items: center;
             }
+        }
+    </style>
+<% end %>
 
-            .btn-secondary {
-                background: white;
-                color: var(--primary);
-                border: 1px solid #E5E7EB;
-            }
+<header class="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 py-4">
+    <div class="header-content">
+        <a class="logo" href="/">FanPilot</a>
+        <nav class="nav-links">
+            <a href="/users/sign_in">Sign in</a>
+            <a class="btn" href="/users/sign_up">Get Started</a>
+        </nav>
+    </div>
+</header>
 
-            .btn-secondary:hover {
-                background: var(--light);
-                border-color: var(--primary);
-            }
-            
-            .features {
-                padding: 80px 0;
-                background-color: white;
-            }
-            
-            .features h2 {
-                text-align: center;
-                font-size: 2.5rem;
-                margin-bottom: 3rem;
-                color: var(--dark);
-            }
-            
-            .features-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 30px;
-                margin-top: 40px;
-            }
-            
-            .feature-card {
-                text-align: center;
-                padding: 30px;
-                border-radius: 10px;
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-                background: white;
-                transition: transform 0.2s;
-            }
-            
-            .feature-card:hover {
-                transform: translateY(-5px);
-            }
-            
-            .feature-icon {
-                font-size: 2.5rem;
-                margin-bottom: 1rem;
-            }
-            
-            .feature-card h3 {
-                margin: 20px 0;
-                color: var(--primary);
-                font-size: 1.5rem;
-            }
-            
-            .feature-card p {
-                color: #4B5563;
-            }
-            
-            .pricing {
-                padding: 80px 0;
-            }
-            
-            .pricing h2 {
-                text-align: center;
-                margin-bottom: 40px;
-            }
-            
-            .pricing-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 30px;
-            }
-            
-            .pricing-card {
-                background-color: white;
-                border-radius: 10px;
-                padding: 30px;
-                text-align: center;
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            }
-            
-            .pricing-card h3 {
-                color: var(--primary);
-                margin-bottom: 10px;
-            }
-            
-            .price {
-                font-size: 2rem;
-                font-weight: 700;
-                margin: 20px 0;
-            }
-            
-            .pricing-card ul {
-                list-style: none;
-                margin: 20px 0;
-            }
-            
-            .pricing-card li {
-                padding: 5px 0;
-            }
-            
-            .testimonials {
-                padding: 80px 0;
-                background-color: white;
-            }
-            
-            .testimonials h2 {
-                text-align: center;
-                margin-bottom: 40px;
-            }
-            
-            .testimonial-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 30px;
-            }
-            
-            .testimonial-card {
-                background-color: var(--light);
-                border-radius: 10px;
-                padding: 30px;
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            }
-            
-            .testimonial-card p {
-                font-style: italic;
-                margin-bottom: 15px;
-            }
-            
-            .testimonial-author {
-                font-weight: 600;
-                color: var(--primary);
-            }
-            
-            .cta {
-                padding: 80px 0;
-                text-align: center;
-                background: linear-gradient(90deg, var(--primary), var(--secondary));
-                color: white;
-            }
-            
-            .cta h2 {
-                margin-bottom: 20px;
-            }
-            
-            .cta .btn {
-                background-color: white;
-                color: var(--primary);
-                margin-top: 20px;
-            }
-            
-            footer {
-                padding: 40px 0;
-                text-align: center;
-                background-color: var(--dark);
-                color: white;
-            }
-            
-            @media (max-width: 768px) {
-                .hero h1 {
-                    font-size: 2.5rem;
-                }
-                
-                .nav-links {
-                    display: none;
-                }
-            }
-        </style>
-    <% end %>
-</head>
-<body>
-    <header>
-        <div class="header-content">
-            <%= link_to "FanPilot", root_path, class: "logo" %>
-            <nav class="nav-links">
-                <% if user_signed_in? %>
-                    <%= link_to "Dashboard", dashboard_path %>
-                    <%= button_to "Sign out", destroy_user_session_path, method: :delete, class: "btn" %>
-                <% else %>
-                    <%= link_to "Sign in", new_user_session_path %>
-                    <%= link_to "Get Started", new_user_registration_path, class: "btn" %>
-                <% end %>
-            </nav>
+<section class="hero">
+    <div class="container">
+        <h1>Supercharge Your Content Creation with <span>AI</span></h1>
+        <p>Engage your audience like never before with personalized, AI-powered responses that feel authentic and drive growth.</p>
+        <div class="hero-buttons">
+            <a class="btn" href="/users/sign_up">Get Started</a>
+            <a class="btn btn-secondary" href="#features">Learn More</a>
         </div>
-    </header>
+    </div>
+</section>
 
-    <section class="hero">
-        <div class="container">
-            <h1>Supercharge Your Content Creation with <span>AI</span></h1>
-            <p>Engage your audience like never before with personalized, AI-powered responses that feel authentic and drive growth.</p>
-            <div class="hero-buttons">
-                <%= link_to "Get Started", new_user_registration_path, class: "btn" %>
-                <%= link_to "Learn More", "#features", class: "btn btn-secondary" %>
+<section class="features" id="features">
+    <div class="container">
+        <h2>Why Choose FanPilot?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3>AI-Powered Responses</h3>
+                <p>Generate engaging, personalized responses that maintain your unique voice and style.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡️</div>
+                <h3>Lightning Fast</h3>
+                <p>Respond to your audience quickly and efficiently, without sacrificing quality.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📈</div>
+                <h3>Grow Your Audience</h3>
+                <p>Increase engagement and build stronger connections with your followers.</p>
             </div>
         </div>
-    </section>
-    
-    <section class="features" id="features">
-        <div class="container">
-            <h2>Why Choose FanPilot?</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🤖</div>
-                    <h3>AI-Powered Responses</h3>
-                    <p>Generate engaging, personalized responses that maintain your unique voice and style.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">⚡️</div>
-                    <h3>Lightning Fast</h3>
-                    <p>Respond to your audience quickly and efficiently, without sacrificing quality.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">📈</div>
-                    <h3>Grow Your Audience</h3>
-                    <p>Increase engagement and build stronger connections with your followers.</p>
-                </div>
+    </div>
+</section>
+
+<section class="pricing" id="pricing">
+    <div class="container">
+        <h2>Simple, Transparent Pricing</h2>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <h3>Basic</h3>
+                <div class="price">$15<span>/month</span></div>
+                <ul>
+                    <li>2,000 AI responses</li>
+                    <li>Human-like AI</li>
+                    <li>Chrome Extension</li>
+                    <li>Basic Customization</li>
+                </ul>
+                <a href="#" class="btn">Get Started</a>
+            </div>
+            <div class="pricing-card">
+                <h3>Premium</h3>
+                <div class="price">$49<span>/month</span></div>
+                <ul>
+                    <li>5,000 AI responses</li>
+                    <li>Advanced Human-like AI</li>
+                    <li>Chrome Extension</li>
+                    <li>Full Customization</li>
+                    <li>Priority Support</li>
+                </ul>
+                <a href="#" class="btn">Get Started</a>
+            </div>
+            <div class="pricing-card">
+                <h3>VIP</h3>
+                <div class="price">$99<span>/month</span></div>
+                <ul>
+                    <li>10,000 AI responses</li>
+                    <li>Premium Human-like AI</li>
+                    <li>Chrome Extension</li>
+                    <li>Full Customization</li>
+                    <li>Priority Support</li>
+                    <li>Revenue Analytics</li>
+                </ul>
+                <a href="#" class="btn">Get Started</a>
             </div>
         </div>
-    </section>
-    
-    <section class="pricing" id="pricing">
-        <div class="container">
-            <h2>Simple, Transparent Pricing</h2>
-            <div class="pricing-grid">
-                <div class="pricing-card">
-                    <h3>Basic</h3>
-                    <div class="price">$15<span>/month</span></div>
-                    <ul>
-                        <li>2,000 AI responses</li>
-                        <li>Human-like AI</li>
-                        <li>Chrome Extension</li>
-                        <li>Basic Customization</li>
-                    </ul>
-                    <a href="#" class="btn">Get Started</a>
-                </div>
-                <div class="pricing-card">
-                    <h3>Premium</h3>
-                    <div class="price">$49<span>/month</span></div>
-                    <ul>
-                        <li>5,000 AI responses</li>
-                        <li>Advanced Human-like AI</li>
-                        <li>Chrome Extension</li>
-                        <li>Full Customization</li>
-                        <li>Priority Support</li>
-                    </ul>
-                    <a href="#" class="btn">Get Started</a>
-                </div>
-                <div class="pricing-card">
-                    <h3>VIP</h3>
-                    <div class="price">$99<span>/month</span></div>
-                    <ul>
-                        <li>10,000 AI responses</li>
-                        <li>Premium Human-like AI</li>
-                        <li>Chrome Extension</li>
-                        <li>Full Customization</li>
-                        <li>Priority Support</li>
-                        <li>Revenue Analytics</li>
-                    </ul>
-                    <a href="#" class="btn">Get Started</a>
-                </div>
+    </div>
+</section>
+
+<section class="testimonials" id="testimonials">
+    <div class="container">
+        <h2>What Creators Are Saying</h2>
+        <div class="testimonial-grid">
+            <div class="testimonial-card">
+                <p>"Since using FanPilot, my subscriber retention has gone up 40% and I'm making twice as much from tips. It's like having an assistant who knows exactly what to say."</p>
+                <div class="testimonial-author">Sophia, Content Creator</div>
+            </div>
+            <div class="testimonial-card">
+                <p>"Our agency uses FanPilot for multiple clients now. It's incredibly user-friendly and we've seen revenue increase for every creator within the first month."</p>
+                <div class="testimonial-author">Michael, Agency Owner</div>
+            </div>
+            <div class="testimonial-card">
+                <p>"I was drowning in messages and losing subscribers because I couldn't keep up. This AI tool saved my business and has doubled my income."</p>
+                <div class="testimonial-author">@stellarcreator</div>
+            </div>
+            <div class="testimonial-card">
+                <p>"The AI responses are so natural that my fans can't tell the difference. I've been able to scale my content creation while maintaining personal connections."</p>
+                <div class="testimonial-author">Alex, Fitness Creator</div>
             </div>
         </div>
-    </section>
-    
-    <section class="testimonials" id="testimonials">
-        <div class="container">
-            <h2>What Creators Are Saying</h2>
-            <div class="testimonial-grid">
-                <div class="testimonial-card">
-                    <p>"Since using FanPilot, my subscriber retention has gone up 40% and I'm making twice as much from tips. It's like having an assistant who knows exactly what to say."</p>
-                    <div class="testimonial-author">Sophia, Content Creator</div>
-                </div>
-                <div class="testimonial-card">
-                    <p>"Our agency uses FanPilot for multiple clients now. It's incredibly user-friendly and we've seen revenue increase for every creator within the first month."</p>
-                    <div class="testimonial-author">Michael, Agency Owner</div>
-                </div>
-                <div class="testimonial-card">
-                    <p>"I was drowning in messages and losing subscribers because I couldn't keep up. This AI tool saved my business and has doubled my income."</p>
-                    <div class="testimonial-author">@stellarcreator</div>
-                </div>
-                <div class="testimonial-card">
-                    <p>"The AI responses are so natural that my fans can't tell the difference. I've been able to scale my content creation while maintaining personal connections."</p>
-                    <div class="testimonial-author">Alex, Fitness Creator</div>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <section class="cta">
-        <div class="container">
-            <h2>Ready to 10x Your Creator Income?</h2>
-            <p>Join thousands of creators already using FanPilot</p>
-            <a href="#" class="btn">Get Started For Free</a>
-        </div>
-    </section>
-    
-    <footer>
-        <div class="container">
-            <p>&copy; 2024 FanPilot. All rights reserved.</p>
-        </div>
-    </footer>
-</body>
-</html> 
+    </div>
+</section>
+
+<section class="cta">
+    <div class="container">
+        <h2>Ready to 10x Your Creator Income?</h2>
+        <p>Join thousands of creators already using FanPilot</p>
+        <a href="#" class="btn">Get Started For Free</a>
+    </div>
+</section>
+
+<footer>
+    <div class="container">
+        <p>© 2024 FanPilot. All rights reserved.</p>
+    </div>
+</footer> 

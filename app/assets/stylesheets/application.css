@@ -26,6 +26,17 @@ html, body {
   color: #1f2937;
 }
 
+/* Header */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  background-color: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }

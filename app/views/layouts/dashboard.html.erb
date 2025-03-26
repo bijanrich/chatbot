@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>FanPilot Dashboard</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= stylesheet_link_tag "application", "dashboard_modern", "data-turbo-track": "reload" %>
-    <%= javascript_importmap_tags %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
     
     <!-- Load Inter font from Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
   </head>
 
-  <body class="bg-gray-100 dashboard-layout">
+  <body class="bg-gray-100 dashboard-layout" data-turbo-suppress-warning>
     <%= render 'layouts/dashboard/navigation' %>
     
     <div class="dashboard-content">
