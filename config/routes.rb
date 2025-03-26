@@ -5,6 +5,11 @@ Rails.application.routes.draw do
   get 'subscriptions/new'
   get 'subscriptions/checkout'
   get 'subscriptions/success'
+  
+  # Legal pages
+  get 'terms', to: 'legal#terms', as: :terms
+  get 'privacy', to: 'legal#privacy', as: :privacy
+  
   # Authenticated routes
   authenticated :user do
     root 'dashboard#index', as: :authenticated_root
