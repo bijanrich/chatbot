@@ -1,4 +1,5 @@
 class DashboardController < ApplicationController
+  include ActionView::Helpers::NumberHelper
   before_action :authenticate_user!
   layout 'dashboard'
   
