@@ -11,11 +11,23 @@ class Users::ConfirmationsController < Devise::ConfirmationsController
 
   # GET /resource/confirmation?confirmation_token=abcdef
   def show
-    super do |resource|
-      if resource.errors.empty?
-        # No need to sign in the user automatically - will prevent redirect loops
-        sign_out(resource) if signed_in?(resource_name)
-      end
+    self.resource = resource_class.confirm_by_token(params[:confirmation_token])
+
+    if resource.errors.empty?
+      # Set up a magic sign in token
+      raw_token, encrypted_token = Devise.token_generator.generate(resource_class, :magic_link_token)
+      resource.update(
+        magic_link_token: encrypted_token,
+        magic_link_sent_at: Time.current
+      )
+
+      # Automatically sign in the user
+      sign_in(resource)
+      
+      set_flash_message!(:notice, :confirmed)
+      respond_with_navigational(resource){ redirect_to after_confirmation_path_for(resource_name, resource) }
+    else
+      respond_with_navigational(resource.errors, status: :unprocessable_entity){ render :new }
     end
   end
 

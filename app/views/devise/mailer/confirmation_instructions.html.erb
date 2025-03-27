@@ -78,12 +78,12 @@
       </div>
       
       <div class="content">
-        <p>Hi <%= @email %>,</p>
+        <p>Hi <%= @resource.name %>,</p>
         
-        <p>Thank you for joining FanPilot! We're excited to have you on board. To get started, please confirm your email address by clicking the button below:</p>
+        <p>Thank you for joining FanPilot! To get started, please click the button below to confirm your email address and sign in to your account:</p>
         
         <div class="button-container">
-          <a href="<%= confirmation_url(@resource, confirmation_token: @token) %>" class="button">Confirm my account</a>
+          <a href="<%= confirmation_url(@resource, confirmation_token: @token) %>" class="button">Confirm and Sign In</a>
         </div>
 
         <div class="link-fallback">

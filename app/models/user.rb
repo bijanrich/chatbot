@@ -13,6 +13,21 @@ class User < ApplicationRecord
   validates :email, presence: true, uniqueness: true
   validates :name, presence: true, length: { minimum: 2, maximum: 50 }, allow_blank: true
   
+  # Magic link expiration time (24 hours)
+  MAGIC_LINK_EXPIRATION = 24.hours
+
+  # Check if magic link is valid
+  def valid_magic_link?
+    magic_link_token.present? && 
+    magic_link_sent_at.present? && 
+    magic_link_sent_at > MAGIC_LINK_EXPIRATION.ago
+  end
+
+  # Invalidate magic link
+  def invalidate_magic_link!
+    update(magic_link_token: nil, magic_link_sent_at: nil)
+  end
+  
   # Organization helpers
   def is_admin_of_organization?
     organization.users.where(id: id).exists?

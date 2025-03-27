@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_03_26_165706) do
+ActiveRecord::Schema[7.1].define(version: 2025_03_27_125311) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "vector"
@@ -203,7 +203,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_26_165706) do
     t.string "name"
     t.string "role"
     t.bigint "organization_id"
+    t.string "magic_link_token"
+    t.datetime "magic_link_sent_at"
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["magic_link_token"], name: "index_users_on_magic_link_token", unique: true
     t.index ["organization_id"], name: "index_users_on_organization_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
