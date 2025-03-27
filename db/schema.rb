@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_03_26_030231) do
+ActiveRecord::Schema[7.1].define(version: 2025_03_26_165706) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "vector"
@@ -37,6 +37,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_26_030231) do
     t.datetime "updated_at", null: false
     t.bigint "telegram_id"
     t.boolean "active", default: true
+    t.bigint "creator_profile_id"
+    t.string "onlyfans_username"
+    t.index ["creator_profile_id"], name: "index_chats_on_creator_profile_id"
+    t.index ["onlyfans_username"], name: "index_chats_on_onlyfans_username"
     t.index ["telegram_id", "active"], name: "index_chats_on_telegram_id_and_active"
     t.index ["telegram_id"], name: "index_chats_on_telegram_id_where_active", unique: true, where: "(active = true)"
   end
@@ -206,6 +210,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_26_030231) do
 
   add_foreign_key "chat_settings", "chats"
   add_foreign_key "chat_settings", "personas"
+  add_foreign_key "chats", "creator_profiles"
   add_foreign_key "conversation_summaries", "chats"
   add_foreign_key "creator_profiles", "organizations"
   add_foreign_key "creator_profiles", "users"
